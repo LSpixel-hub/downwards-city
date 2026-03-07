@@ -249,7 +249,7 @@ const findUnexploredPassages = (revealedZones, map) => {
 
 // ======== OVERWORLD BIOME (level 0) ========
 const OVERWORLD_BIOME = {
-  name: "NEO-TOKYO BAY",
+  name: "NEON BAY",
   floorColor: OW_PALETTE.promenade,
   corridorColor: OW_PALETTE.streetMid,
   floorChars: ["·", ".", " ", " ", "˙"],
@@ -1541,7 +1541,7 @@ function DownwardsNeon() {
 
     setShowLevelTransition(false);
     setGameState("playing");
-    showMessage("◆ NEO-TOKYO BAY — FIND THE DUNGEON ENTRANCE ◆", OW_PALETTE.neonCyan, 4000);
+    showMessage("◆ NEON BAY — FIND THE DUNGEON ENTRANCE ◆", OW_PALETTE.neonCyan, 4000);
   }, [OW_TO_DUNGEON, showMessage]);
 
   // ======== OVERWORLD : Animation lente de l'eau ========
@@ -5293,11 +5293,15 @@ function DownwardsNeon() {
           const rendered = getOverworldTileRender(
             overworldRawMap, realX, realY, overworldTick, overworldCoastLine
           );
+          // Escalier overworld : flash rapide pour être visible de loin
+          const isStairs = overworldRawMap[realY]?.[realX] === OW_TILE.STAIRS;
           row.push({
             char: rendered.char,
             color: rendered.color,
             glow: rendered.glow || "none",
-            animation: rendered.animClass ? "glow 2s ease-in-out infinite" : null,
+            animation: isStairs
+              ? "flash 0.7s ease-in-out infinite"
+              : rendered.animClass ? "glow 2s ease-in-out infinite" : null,
           });
           continue;
         }
