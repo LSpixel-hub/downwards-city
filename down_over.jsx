@@ -43,7 +43,7 @@ import {
 
 const GRID_WIDTH = 50;
 const GRID_HEIGHT = 21;
-const TITLE_TO_LORE_DELAY = 5000;
+const TITLE_TO_LORE_DELAY = 4000;
 
 const PROLOGUE_LINES = [
   "PROLOGUE",
@@ -5708,14 +5708,14 @@ function DownwardsNeon() {
             margin: 0 0 1.2rem;
           }
 
-          .lore-title {
+	.lore-title {
             text-align: center;
             margin-bottom: 2rem !important;
-            color: ${NEON.pink};
+            color: #d4d4d8; /* Couleur argentée */
             letter-spacing: 0.35em;
             font-family: "Orbitron", sans-serif;
-            text-shadow: 0 0 12px ${NEON.pink};
-          }
+            text-shadow: 0 0 12px rgba(212, 212, 216, 0.8); /* Halo argenté */
+          }         
 
           .lore-actions {
             position: absolute;
@@ -5735,13 +5735,20 @@ function DownwardsNeon() {
           .lore-skip-btn {
             font-family: "Orbitron", sans-serif;
             background: rgba(5, 0, 20, 0.8);
-            border: 1px solid ${NEON.pink};
-            color: ${NEON.pink};
+            border: 1px solid #d4d4d8; /* Bordure argentée */
+            color: #d4d4d8; /* Texte argenté */
             padding: 10px 28px;
             letter-spacing: 0.22em;
             cursor: pointer;
-            text-shadow: 0 0 8px ${NEON.pink};
-            box-shadow: 0 0 10px rgba(255, 42, 109, 0.45);
+            text-shadow: 0 0 8px rgba(212, 212, 216, 0.8);
+            box-shadow: 0 0 10px rgba(212, 212, 216, 0.45); /* Reflet argenté */
+            transition: all 0.3s ease;
+          }
+          
+          /* Petit bonus : le bouton brillera un peu plus au survol sur PC */
+          .lore-skip-btn:hover {
+            background: rgba(212, 212, 216, 0.1);
+            box-shadow: 0 0 15px rgba(212, 212, 216, 0.6);
           }
 
           .mobile-only-btn {
@@ -5799,9 +5806,11 @@ function DownwardsNeon() {
             background: linear-gradient(180deg, rgba(15,0,25,0.9) 0%, rgba(15,0,25,0.5) 70%, transparent 100%);
           }
           
-          @media (max-width: 800px) {
+	@media (max-width: 800px) {
+            /* Désactive les scanlines sur mobile portrait */
+            .scanlines::before { display: none; }
             .root-container {
-              height: 100vh;
+              height: 100vh;          
               height: 100dvh;
               min-height: 0 !important;
               padding: 5px !important;
@@ -5837,14 +5846,15 @@ function DownwardsNeon() {
             }           
 
             .hud-grid > div {
-              padding: 3px 2px !important;
+              padding: 2px 1px !important; /* On réduit le padding pour faire de la place */
             }
             .hud-grid > div > div:first-child {
-              font-size: 0.55rem !important;
-              margin-bottom: 1px !important;
+              font-size: 0.70rem !important; /* Textes des labels agrandis (LVL, HP...) */
+              margin-bottom: 0px !important; /* On colle le label à la valeur */
             }
             .hud-grid > div > div:last-child {
-              font-size: 0.85rem !important;
+              font-size: 1.0rem !important; /* Chiffres beaucoup plus grands et lisibles */
+              line-height: 1 !important; /* Empêche la hauteur de la case de s'agrandir */
             }
             
 .controls-col {
@@ -6226,6 +6236,8 @@ function DownwardsNeon() {
                     color: "rgba(255, 255, 255, 0.5)",
                     fontSize: "0.65rem",
                     letterSpacing: "0.15em",
+                    marginRight:
+                      "-0.15em" /* <-- Correction du centrage optique */,
                     fontFamily: "Orbitron, sans-serif",
                     marginBottom: "3px",
                   }}
@@ -6292,7 +6304,7 @@ function DownwardsNeon() {
               }}
             >
               <div
-                className="scanlines"
+                className={isMobile ? "" : "scanlines"}
                 onPointerDown={(e) => {
                   tapStartRef.current = {
                     x: e.clientX,
