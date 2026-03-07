@@ -5748,14 +5748,14 @@ function DownwardsNeon() {
             display: none !important;
           }
           
-          .controls-col {
+         .controls-col {
             display: flex;
             flex-direction: row;
             align-items: center;
             justify-content: center;
             gap: 8px;
             width: 100%;
-            margin-top: 4px;
+            margin-top: 24px; /* <-- C'est ici ! On passe de 4px à 24px pour bien séparer la carte des boutons */
             padding-bottom: 6px;
             flex-shrink: 0;
             flex-wrap: nowrap;
@@ -5788,7 +5788,7 @@ function DownwardsNeon() {
             height: 100%;
           }
   
-          /* ===== NOUVEAU STYLE DU HUD ===== */
+        /* ===== NOUVEAU STYLE DU HUD ===== */
           .hud-grid {
             display: grid;
             grid-template-columns: repeat(8, 1fr);
@@ -5828,13 +5828,14 @@ function DownwardsNeon() {
               display: none;
             }
             
-            /* ===== NOUVEAU STYLE DU HUD POUR MOBILE ===== */
+/* ===== NOUVEAU STYLE DU HUD POUR MOBILE ===== */
             .hud-grid {
               grid-template-columns: repeat(4, 1fr);
-              padding: 4px 6px 6px 6px;
-              margin-bottom: 4px;
+              padding: 2px 6px 2px 6px;
+              margin-bottom: 0; /* Plus de marge sous le HUD */
               gap: 4px;
-            }
+            }           
+
             .hud-grid > div {
               padding: 3px 2px !important;
             }
@@ -5845,15 +5846,17 @@ function DownwardsNeon() {
             .hud-grid > div > div:last-child {
               font-size: 0.85rem !important;
             }
-            .controls-col {
+            
+.controls-col {
               display: flex !important;
               flex-direction: column;
               align-items: stretch;
               gap: 4px;
               width: 100%;
-              margin-top: 4px;
-              padding-bottom: 4px;
+              margin-top: 0; /* Plus d'espace entre la map et les boutons */
+              padding-bottom: 0;
             }
+
             .actions-bar {
               margin-top: 4px;
               display: grid !important;
