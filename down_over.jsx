@@ -1461,17 +1461,20 @@ function DownwardsNeon() {
   );
 
   // ======== OVERWORLD : Convertir tile IDs overworld → dungeon ========
-  const OW_TO_DUNGEON = useMemo(() => ({
-    [OW_TILE.VOID]: TILE.VOID,
-    [OW_TILE.STREET]: TILE.CORRIDOR,
-    [OW_TILE.BUILDING]: TILE.WALL,
-    [OW_TILE.LIT_WINDOW]: TILE.WALL,
-    [OW_TILE.NEON_SIGN]: TILE.WALL,
-    [OW_TILE.STREETLIGHT]: TILE.CORRIDOR,
-    [OW_TILE.STAIRS]: TILE.STAIRS,
-    [OW_TILE.WATER]: TILE.VOID,
-    [OW_TILE.PROMENADE]: TILE.FLOOR,
-  }), []);
+  const OW_TO_DUNGEON = useMemo(
+    () => ({
+      [OW_TILE.VOID]: TILE.VOID,
+      [OW_TILE.STREET]: TILE.CORRIDOR,
+      [OW_TILE.BUILDING]: TILE.WALL,
+      [OW_TILE.LIT_WINDOW]: TILE.WALL,
+      [OW_TILE.NEON_SIGN]: TILE.WALL,
+      [OW_TILE.STREETLIGHT]: TILE.CORRIDOR,
+      [OW_TILE.STAIRS]: TILE.STAIRS,
+      [OW_TILE.WATER]: TILE.VOID,
+      [OW_TILE.PROMENADE]: TILE.FLOOR,
+    }),
+    []
+  );
 
   // ======== OVERWORLD : Entrer dans la vue ville (level 0) ========
   const enterOverworld = useCallback(() => {
@@ -1565,7 +1568,11 @@ function DownwardsNeon() {
 
     setShowLevelTransition(false);
     setGameState("playing");
-    showMessage("◆ NEON BAY — FIND THE DUNGEON ENTRANCE ◆", OW_PALETTE.neonCyan, 4000);
+    showMessage(
+      "◆ NEON BAY — FIND THE DUNGEON ENTRANCE ◆",
+      OW_PALETTE.neonCyan,
+      4000
+    );
   }, [OW_TO_DUNGEON, showMessage]);
 
   // ======== OVERWORLD : Animation lente de l'eau ========
@@ -3070,7 +3077,9 @@ function DownwardsNeon() {
 
         // Résolution si le monstre ciblé meurt
         if (newMonsters[monsterIdx].currentHp <= 0) {
-          const baseLoot = monsterAtTarget.isBoss ? 100 : 1 + Math.floor(Math.random() * 3);
+          const baseLoot = monsterAtTarget.isBoss
+            ? 100
+            : 1 + Math.floor(Math.random() * 3);
           const loot = monsterAtTarget.isBoss
             ? baseLoot
             : baseLoot + Math.floor(levelRef.current / 5) + terrainKillLoot;
@@ -3151,7 +3160,10 @@ function DownwardsNeon() {
 
       // Overworld (level 0) : hint quand on marche sur l'escalier
       if (levelRef.current === 0 && tile === TILE.STAIRS) {
-        showMessage("◆ DUNGEON ENTRANCE — PRESS S TO ENTER ◆", OW_PALETTE.neonMagenta);
+        showMessage(
+          "◆ DUNGEON ENTRANCE — PRESS S TO ENTER ◆",
+          OW_PALETTE.neonMagenta
+        );
       }
 
       const newMap = [..._map];
@@ -3512,9 +3524,13 @@ function DownwardsNeon() {
             hitCount++;
             totalHitCount++;
             if (newMonsters[hitIdx].currentHp <= 0) {
-              const baseLoot = targetMonster.isBoss ? 100 : 1 + Math.floor(Math.random() * 3);
+              const baseLoot = targetMonster.isBoss
+                ? 100
+                : 1 + Math.floor(Math.random() * 3);
               const levelBonus = Math.floor(levelRef.current / 5);
-              const loot = targetMonster.isBoss ? baseLoot : baseLoot + levelBonus;
+              const loot = targetMonster.isBoss
+                ? baseLoot
+                : baseLoot + levelBonus;
               setGold((g) => g + loot);
               showMessage(
                 defMsg ||
@@ -4653,8 +4669,12 @@ function DownwardsNeon() {
 
           if (newHp <= 0) {
             // Monstre tué par la charge
-            const baseLoot = monster.isBoss ? 100 : 1 + Math.floor(Math.random() * 3);
-            const loot = monster.isBoss ? baseLoot : baseLoot + Math.floor(levelRef.current / 5);
+            const baseLoot = monster.isBoss
+              ? 100
+              : 1 + Math.floor(Math.random() * 3);
+            const loot = monster.isBoss
+              ? baseLoot
+              : baseLoot + Math.floor(levelRef.current / 5);
             setGold((g) => g + loot);
             spawnDeathEffect(pushX, pushY, monster.color);
             newMonsters[monsterIdx] = {
@@ -5112,26 +5132,31 @@ function DownwardsNeon() {
     };
   }, []);
 
-  const handleGridHover = useCallback((e) => {
-    const { tx, ty } = getTileFromPointer(e);
-    const key = `${tx},${ty}`;
-    const monster = monstersRef.current.find(
-      (m) => m.x === tx && m.y === ty && m.currentHp > 0
-    );
-    const zone = getZone(tx, ty);
-    if (monster && revealedZonesRef.current.has(zone)) {
-      if (hoveredMonsterRef.current !== key) {
-        hoveredMonsterRef.current = key;
-        showMessage(
-          `◆ ${monster.name.toUpperCase()} — HP ${monster.currentHp}/${monster.hp} ◆`,
-          monster.color,
-          60000
-        );
+  const handleGridHover = useCallback(
+    (e) => {
+      const { tx, ty } = getTileFromPointer(e);
+      const key = `${tx},${ty}`;
+      const monster = monstersRef.current.find(
+        (m) => m.x === tx && m.y === ty && m.currentHp > 0
+      );
+      const zone = getZone(tx, ty);
+      if (monster && revealedZonesRef.current.has(zone)) {
+        if (hoveredMonsterRef.current !== key) {
+          hoveredMonsterRef.current = key;
+          showMessage(
+            `◆ ${monster.name.toUpperCase()} — HP ${monster.currentHp}/${
+              monster.hp
+            } ◆`,
+            monster.color,
+            60000
+          );
+        }
+      } else if (hoveredMonsterRef.current) {
+        hoveredMonsterRef.current = null;
       }
-    } else if (hoveredMonsterRef.current) {
-      hoveredMonsterRef.current = null;
-    }
-  }, [getTileFromPointer, showMessage]);
+    },
+    [getTileFromPointer, showMessage]
+  );
 
   const handleGridClick = useCallback((e) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -5167,7 +5192,9 @@ function DownwardsNeon() {
         const dist = Math.max(Math.abs(tx - px), Math.abs(ty - py));
         if (dist > 1) {
           showMessage(
-            `◆ ${tappedMonster.name.toUpperCase()} — HP ${tappedMonster.currentHp}/${tappedMonster.hp} ◆`,
+            `◆ ${tappedMonster.name.toUpperCase()} — HP ${
+              tappedMonster.currentHp
+            }/${tappedMonster.hp} ◆`,
             tappedMonster.color
           );
           return;
@@ -5264,7 +5291,12 @@ function DownwardsNeon() {
   }, []);
 
   const biome = isSecretVault && activeBiome ? activeBiome : getBiome(level);
-  const windowBorderColor = level === 0 ? OW_PALETTE.neonMagenta : level <= 5 ? NEON.pink : biome.corridorColor;
+  const windowBorderColor =
+    level === 0
+      ? OW_PALETTE.neonMagenta
+      : level <= 5
+      ? NEON.pink
+      : biome.corridorColor;
 
   const activeMonstersMap = useMemo(() => {
     const lookup = new Map();
@@ -5344,7 +5376,11 @@ function DownwardsNeon() {
         // ======== OVERWORLD : rendu via getTileRender (position-dependent) ========
         if (isOverworld) {
           const rendered = getOverworldTileRender(
-            overworldRawMap, realX, realY, overworldTick, overworldCoastLine
+            overworldRawMap,
+            realX,
+            realY,
+            overworldTick,
+            overworldCoastLine
           );
           // Escalier overworld : flash rapide pour être visible de loin
           const isStairs = overworldRawMap[realY]?.[realX] === OW_TILE.STAIRS;
@@ -5354,7 +5390,9 @@ function DownwardsNeon() {
             glow: rendered.glow || "none",
             animation: isStairs
               ? "flash 0.7s ease-in-out infinite"
-              : rendered.animClass ? "glow 2s ease-in-out infinite" : null,
+              : rendered.animClass
+              ? "glow 2s ease-in-out infinite"
+              : null,
           });
           continue;
         }
@@ -5403,7 +5441,15 @@ function DownwardsNeon() {
       grid.push(row);
     }
     return grid;
-  }, [map, revealedZones, tileCache, level, overworldRawMap, overworldTick, overworldCoastLine]);
+  }, [
+    map,
+    revealedZones,
+    tileCache,
+    level,
+    overworldRawMap,
+    overworldTick,
+    overworldCoastLine,
+  ]);
 
   const gridData = useMemo(() => {
     const classColor = CLASSES[currentClass].color;
@@ -5558,11 +5604,13 @@ function DownwardsNeon() {
             55% { opacity: 0.94; }
             75% { opacity: 0.99; }
             100% { opacity: 0.965; }
+          
+	  }
+	@keyframes loreScroll {
+            0% { transform: translateY(5vh); }
+            100% { transform: translateY(-100%); }
           }
-          @keyframes loreScroll {
-            0% { transform: translateY(110%) rotateX(20deg); }
-            100% { transform: translateY(-240%) rotateX(25deg); }
-          }
+
           @keyframes borderGlow { 0%, 100% { box-shadow: 0 0 5px ${NEON.pink}, 0 0 10px ${NEON.pink}, 0 0 20px ${NEON.pink}; } 50% { box-shadow: 0 0 10px ${NEON.cyan}, 0 0 20px ${NEON.cyan}, 0 0 40px ${NEON.cyan}; } }
           @keyframes voidDanger { 0%, 100% { color: ${NEON.yellow}; text-shadow: 0 0 5px ${NEON.yellow}; } 50% { color: ${NEON.red}; text-shadow: 0 0 10px ${NEON.red}, 0 0 20px ${NEON.red}; } }
           @keyframes effectPop { 0% { opacity: 0; transform: scale(0.5); } 30% { opacity: 1; transform: scale(1.4); } 100% { opacity: 1; transform: scale(1); } }
@@ -5636,22 +5684,22 @@ function DownwardsNeon() {
             z-index: 3;
           }
 
-          .lore-content {
+         .lore-content {
             position: absolute;
             inset: 0;
             overflow: hidden;
-            padding: 20vh 14% 22vh;
-            perspective: 450px;
+            padding: 5vh 6% 15vh; /* Paddings réduits et adaptés pour les écrans mobiles */
           }
 
           .lore-scroll {
             color: ${NEON.cyan};
             text-shadow: 0 0 7px rgba(5, 217, 232, 0.75);
-            line-height: 1.8;
-            font-size: clamp(0.88rem, 2vw, 1.08rem);
-            letter-spacing: 0.06em;
-            transform-origin: 50% 100%;
-            animation: loreScroll 52s linear forwards;
+            line-height: 1.6;
+            font-size: clamp(0.95rem, 4vw, 1.2rem); /* Taille dynamique mobile/PC */
+            letter-spacing: 0.03em;
+            font-family: system-ui, -apple-system, sans-serif; /* Police claire et très lisible */
+            text-align: justify; /* Justification du texte */
+            animation: loreScroll 115s linear forwards; /* Défilement classique sans effet 3D */
           }
 
           .lore-scroll p {
@@ -6050,7 +6098,10 @@ function DownwardsNeon() {
           <div className="lore-content">
             <div className="lore-scroll">
               {PROLOGUE_LINES.map((line, index) => (
-                <p key={`${index}-${line.slice(0, 8)}`} className={index === 0 ? "lore-title" : ""}>
+                <p
+                  key={`${index}-${line.slice(0, 8)}`}
+                  className={index === 0 ? "lore-title" : ""}
+                >
                   {line || "\u00a0"}
                 </p>
               ))}
@@ -6130,7 +6181,11 @@ function DownwardsNeon() {
           {/* HUD */}
           <div className="hud-grid">
             {[
-              { label: "LVL", value: level === 0 ? "CITY" : level, color: level === 0 ? OW_PALETTE.neonCyan : NEON.cyan },
+              {
+                label: "LVL",
+                value: level === 0 ? "CITY" : level,
+                color: level === 0 ? OW_PALETTE.neonCyan : NEON.cyan,
+              },
               {
                 label: "HP",
                 value: `${hp}/${maxHp}`,
@@ -6281,7 +6336,13 @@ function DownwardsNeon() {
                   handleGridClick(e);
                 }}
                 onPointerMove={!isMobile ? handleGridHover : undefined}
-                onPointerLeave={!isMobile ? () => { hoveredMonsterRef.current = null; } : undefined}
+                onPointerLeave={
+                  !isMobile
+                    ? () => {
+                        hoveredMonsterRef.current = null;
+                      }
+                    : undefined
+                }
                 onPointerCancel={() => {
                   tapStartRef.current = null;
                 }}
