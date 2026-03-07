@@ -10,9 +10,9 @@ import { flushSync } from "react-dom";
 import { generateThemedVault, getVaultStairsChance } from "./vaultgenerator";
 import {
   generateOverworld,
+  TILE as OW_TILE,
   PALETTE as OW_PALETTE,
   getTileRender as getOverworldTileRender,
-  isWalkable as owIsWalkable,
 } from "./overworldgenerator";
 import { NEON, BIOMES, CLASSES, POTIONS, VENDOR_SCROLLS, GEMS } from "./data";
 import {
@@ -247,7 +247,22 @@ const findUnexploredPassages = (revealedZones, map) => {
   return passages;
 };
 
+// ======== OVERWORLD BIOME (level 0) ========
+const OVERWORLD_BIOME = {
+  name: "NEO-TOKYO BAY",
+  floorColor: OW_PALETTE.promenade,
+  corridorColor: OW_PALETTE.streetMid,
+  floorChars: ["·", ".", " ", " ", "˙"],
+  levels: [0, 0],
+  plasmaColor1: "#001a33",
+  plasmaColor2: "#0c0a14",
+  gridColor: "0,255,249",
+  bgFrom: "#0c0a14",
+  bgTo: "#12101c",
+};
+
 const getBiome = (level) => {
+  if (level === 0) return OVERWORLD_BIOME;
   for (const biome of BIOMES) {
     if (level >= biome.levels[0] && level <= biome.levels[1]) return biome;
   }
@@ -751,9 +766,8 @@ function DownwardsNeon() {
   const [fireTimers, setFireTimers] = useState(new Map());
 
   // ======== OVERWORLD STATE ========
-  const [overworldMap, setOverworldMap] = useState(null);
+  const [overworldRawMap, setOverworldRawMap] = useState(null); // raw overworld tile IDs for rendering
   const [overworldCoastLine, setOverworldCoastLine] = useState([]);
-  const [overworldStairsPos, setOverworldStairsPos] = useState({ x: 0, y: 0 });
   const [overworldTick, setOverworldTick] = useState(0);
 
   // ======== A3 : message + color fusionnés en un seul state (1 render au lieu de 2) ========
@@ -899,7 +913,6 @@ function DownwardsNeon() {
   const handleVendorConfirmRef = useRef(null);
   const startGameRef = useRef(null);
   const enterOverworldRef = useRef(null);
-  const overworldMoveRef = useRef(null);
   const processMonsterTurnRef = useRef(null);
   const corridorDashRef = useRef(null);
 
@@ -1423,54 +1436,126 @@ function DownwardsNeon() {
     []
   );
 
-  // ======== OVERWORLD : Entrer dans la vue ville avant le donjon ========
+  // ======== OVERWORLD : Convertir tile IDs overworld → dungeon ========
+  const OW_TO_DUNGEON = useMemo(() => ({
+    [OW_TILE.VOID]: TILE.VOID,
+    [OW_TILE.STREET]: TILE.CORRIDOR,
+    [OW_TILE.BUILDING]: TILE.WALL,
+    [OW_TILE.LIT_WINDOW]: TILE.WALL,
+    [OW_TILE.NEON_SIGN]: TILE.WALL,
+    [OW_TILE.STREETLIGHT]: TILE.CORRIDOR,
+    [OW_TILE.STAIRS]: TILE.STAIRS,
+    [OW_TILE.WATER]: TILE.VOID,
+    [OW_TILE.PROMENADE]: TILE.FLOOR,
+  }), []);
+
+  // ======== OVERWORLD : Entrer dans la vue ville (level 0) ========
   const enterOverworld = useCallback(() => {
     const ow = generateOverworld();
-    setOverworldMap(ow.map);
+
+    // Convertir la map overworld en tile IDs dungeon pour le moteur de jeu
+    const dungeonMap = ow.map.map((row) =>
+      row.map((t) => OW_TO_DUNGEON[t] ?? TILE.VOID)
+    );
+
+    // Garder la map brute pour le rendu overworld
+    setOverworldRawMap(ow.map);
     setOverworldCoastLine(ow.coastLine);
-    setOverworldStairsPos(ow.stairsPos);
-    setPlayer(ow.playerPos);
     setOverworldTick(0);
-    setMsg({ text: "◆ NEO-TOKYO BAY — FIND THE DUNGEON ENTRANCE ◆", color: OW_PALETTE.neonCyan });
-    setGameState("overworld");
-  }, []);
 
-  // ======== OVERWORLD : Déplacement sur la carte ville ========
-  const overworldMove = useCallback((dx, dy) => {
-    if (gameStateRef.current !== "overworld") return;
-    const _map = overworldMap;
-    const _player = playerRef.current;
-    if (!_map) return;
-    const nx = _player.x + dx;
-    const ny = _player.y + dy;
-    if (!owIsWalkable(_map, nx, ny)) return;
-
-    setPlayer({ x: nx, y: ny });
-    setOverworldTick((t) => t + 1);
-
-    // Atteint l'escalier → lancer le donjon
-    const _stairsPos = overworldStairsPos;
-    if (nx === _stairsPos.x && ny === _stairsPos.y) {
-      setGameState("entering_dungeon");
-      setMsg({ text: "◆ ENTERING THE DUNGEON... ◆", color: OW_PALETTE.neonMagenta });
-      setTimeout(() => {
-        startGameRef.current();
-      }, 600);
+    // Tout réinitialiser comme startGame, mais level=0
+    effectTimersRef.current.forEach((t) => clearTimeout(t));
+    effectTimersRef.current.clear();
+    pendingEffectsRef.current.clear();
+    if (rafIdRef.current) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
     }
-  }, [overworldMap, overworldStairsPos]);
+    setTileEffects(new Map());
+    setMapZoom(getInitialMapZoom());
+    setFastTravelArmed(false);
+    cancelAutoPathRef.current();
+
+    setLevel(0);
+    setHp(10);
+    setMaxHp(10);
+    setGold(0);
+    setArmorPermanent(0);
+    setEquippedArmorValue(0);
+    setEquippedArmorName(null);
+    setDmgBonus(0);
+    deathInProgressRef.current = false;
+    setCurrentClass(1);
+    setUnlockedGems([0, 0, 0, 0, 0]);
+    setHasWeapon(false);
+    setWeapon({ name: "Fists", dmg: 1, short: "NONE" });
+    setHasBow(false);
+    setBow({ name: "None", bonus: 0 });
+    setHasKey(false);
+    setPrayerUsed(false);
+    setIsSecretVault(false);
+    setActiveBiome(null);
+    setFloorTurns(0);
+    setPrayedThisFloor(false);
+    setKillsThisFloor(0);
+    setTerrainKillsThisFloor(0);
+    setDashedThisFloor(false);
+    setDamageTakenThisFloor(0);
+    setTeleportedThisFloor(false);
+    setClassSwitchedThisFloor(false);
+    setGoldCollectedThisFloor(0);
+    setZonesDiscoveredThisFloor(0);
+    setTrapsSteppedThisFloor(false);
+    setEarnedBadges([]);
+    setComboCount(0);
+    setOverdriveTurns(0);
+    setHasOverloadKey(false);
+    setFireTimers(new Map());
+    resetKillTrackingRef.current = true;
+    resetDamageTrackingRef.current = true;
+    resetGoldTrackingRef.current = true;
+    resetZoneTrackingRef.current = true;
+
+    // Injecter la map convertie dans le moteur de jeu
+    setMap(dungeonMap);
+    setPlayer(ow.playerPos);
+    setStairsPos(ow.stairsPos);
+    setTeleporter1(null);
+    setTeleporter2(null);
+    setMonsters([]);
+    setFloorObjective(null);
+    setKeyNeeded(false);
+    setVendorScroll(null);
+    setPendingWeapon(null);
+    setPendingArmor(null);
+    setPendingBow(null);
+    setGemOnMap(null);
+    // Révéler toute la carte overworld (pas de fog of war)
+    const allZones = new Set();
+    for (let y = 1; y <= GRID_HEIGHT; y++) {
+      for (let x = 1; x <= GRID_WIDTH; x++) {
+        allZones.add(getZone(x, y));
+      }
+    }
+    setRevealedZones(allZones);
+
+    setShowLevelTransition(false);
+    setGameState("playing");
+    showMessage("◆ NEO-TOKYO BAY — FIND THE DUNGEON ENTRANCE ◆", OW_PALETTE.neonCyan, 4000);
+  }, [OW_TO_DUNGEON, showMessage]);
 
   // ======== OVERWORLD : Animation lente de l'eau ========
   useEffect(() => {
-    if (gameState !== "overworld" && gameState !== "entering_dungeon") return;
+    if (levelRef.current !== 0 || gameStateRef.current !== "playing") return;
     const id = setInterval(() => setOverworldTick((t) => t + 1), 800);
     return () => clearInterval(id);
-  }, [gameState]);
+  }, [gameState, level]);
 
   const startGame = useCallback(() => {
     const freshUnlockedGems = [0, 0, 0, 0, 0];
 
     // Clear overworld state
-    setOverworldMap(null);
+    setOverworldRawMap(null);
 
     effectTimersRef.current.forEach((t) => clearTimeout(t));
     effectTimersRef.current.clear();
@@ -2138,6 +2223,10 @@ function DownwardsNeon() {
     ) => {
       const pPos = playerPos || playerRef.current;
       const _level = levelRef.current;
+
+      // Overworld (level 0) : pas de monstres
+      if (_level === 0) return;
+
       const _armor = armorRef.current;
       const _map = mapRef.current;
 
@@ -3036,6 +3125,11 @@ function DownwardsNeon() {
         });
       }
 
+      // Overworld (level 0) : hint quand on marche sur l'escalier
+      if (levelRef.current === 0 && tile === TILE.STAIRS) {
+        showMessage("◆ DUNGEON ENTRANCE — PRESS S TO ENTER ◆", OW_PALETTE.neonMagenta);
+      }
+
       const newMap = [..._map];
       newMap[ny] = [...newMap[ny]];
       if (tile === TILE.GOLD) {
@@ -3890,6 +3984,14 @@ function DownwardsNeon() {
       currentTile === TILE.STAIRS || currentTile === TILE.VAULT_STAIRS;
     if (_player.x !== _stairsPos.x || _player.y !== _stairsPos.y || !isOnStairs)
       return;
+
+    // Overworld (level 0) → lancer le vrai jeu au niveau 1
+    if (levelRef.current === 0) {
+      showMessage("◆ ENTERING THE DUNGEON... ◆", OW_PALETTE.neonMagenta);
+      setTimeout(() => startGameRef.current(), 600);
+      return;
+    }
+
     if (keyNeededRef.current && !hasKeyRef.current) {
       showMessage("◆ LOCKED ◆", NEON.red);
       return;
@@ -4268,7 +4370,6 @@ function DownwardsNeon() {
   handleVendorConfirmRef.current = handleVendorConfirm;
   startGameRef.current = startGame;
   enterOverworldRef.current = enterOverworld;
-  overworldMoveRef.current = overworldMove;
   processMonsterTurnRef.current = processMonsterTurn;
 
   // ======== BOSS VAULT : Auto-déblocage escalier quand tous les monstres sont morts ========
@@ -4815,21 +4916,6 @@ function DownwardsNeon() {
         return;
       }
 
-      // ======== OVERWORLD MOVEMENT ========
-      if (gs === "overworld") {
-        const owDirMap = {
-          ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0],
-          Numpad8: [0, -1], Numpad2: [0, 1], Numpad4: [-1, 0], Numpad6: [1, 0],
-          Numpad7: [-1, -1], Numpad9: [1, -1], Numpad1: [-1, 1], Numpad3: [1, 1],
-        };
-        const owDir = owDirMap[e.key] || owDirMap[e.code];
-        if (owDir) {
-          e.preventDefault();
-          overworldMoveRef.current(owDir[0], owDir[1]);
-        }
-        return;
-      }
-
       const gameKeys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " "];
       const gameNumpads = [
         "Numpad1",
@@ -5125,7 +5211,7 @@ function DownwardsNeon() {
   }, []);
 
   const biome = isSecretVault && activeBiome ? activeBiome : getBiome(level);
-  const windowBorderColor = level <= 5 ? NEON.pink : biome.corridorColor;
+  const windowBorderColor = level === 0 ? OW_PALETTE.neonMagenta : level <= 5 ? NEON.pink : biome.corridorColor;
 
   const activeMonstersMap = useMemo(() => {
     const lookup = new Map();
@@ -5189,6 +5275,7 @@ function DownwardsNeon() {
   // ============================================
   const baseGrid = useMemo(() => {
     const hidden = { char: " ", color: "#000", glow: "none", animation: null };
+    const isOverworld = level === 0 && overworldRawMap;
     const grid = [];
     for (let y = 0; y < GRID_HEIGHT; y++) {
       const row = [];
@@ -5200,6 +5287,21 @@ function DownwardsNeon() {
           row.push(hidden);
           continue;
         }
+
+        // ======== OVERWORLD : rendu via getTileRender (position-dependent) ========
+        if (isOverworld) {
+          const rendered = getOverworldTileRender(
+            overworldRawMap, realX, realY, overworldTick, overworldCoastLine
+          );
+          row.push({
+            char: rendered.char,
+            color: rendered.color,
+            glow: rendered.glow || "none",
+            animation: rendered.animClass ? "glow 2s ease-in-out infinite" : null,
+          });
+          continue;
+        }
+
         const tile = map[realY]?.[realX] ?? TILE.VOID;
         const rendered = tileCache[tile] || tileCache[TILE.VOID];
 
@@ -5244,7 +5346,7 @@ function DownwardsNeon() {
       grid.push(row);
     }
     return grid;
-  }, [map, revealedZones, tileCache]);
+  }, [map, revealedZones, tileCache, level, overworldRawMap, overworldTick, overworldCoastLine]);
 
   const gridData = useMemo(() => {
     const classColor = CLASSES[currentClass].color;
@@ -5355,49 +5457,13 @@ function DownwardsNeon() {
     destinationPath,
   ]);
 
-  // ======== OVERWORLD GRID ========
-  const overworldGridData = useMemo(() => {
-    if (!overworldMap) return null;
-    const grid = [];
-    for (let y = 0; y < GRID_HEIGHT; y++) {
-      const row = [];
-      for (let x = 0; x < GRID_WIDTH; x++) {
-        const realX = x + 1;
-        const realY = y + 1;
-
-        // Player
-        if (player.x === realX && player.y === realY) {
-          row.push({
-            char: "@",
-            color: OW_PALETTE.neonCyan,
-            glow: `0 0 10px ${OW_PALETTE.neonCyan}, 0 0 20px ${OW_PALETTE.neonCyan}`,
-            animation: "glow 1s ease-in-out infinite",
-          });
-          continue;
-        }
-
-        const rendered = getOverworldTileRender(overworldMap, realX, realY, overworldTick, overworldCoastLine);
-        row.push({
-          char: rendered.char,
-          color: rendered.color,
-          glow: rendered.glow || "none",
-          animation: rendered.animClass ? `glow 2s ease-in-out infinite` : null,
-        });
-      }
-      grid.push(row);
-    }
-    return grid;
-  }, [overworldMap, overworldCoastLine, overworldTick, player]);
-
   return (
     <div
       className="root-container"
       style={{
         minHeight: "100vh",
         background:
-          gameState === "overworld" || gameState === "entering_dungeon"
-            ? "linear-gradient(180deg, #0c0a14 0%, #12101c 50%, #0c0a14 100%)"
-            : gameState === "playing" && !showLevelTransition
+          gameState === "playing" && !showLevelTransition
             ? `linear-gradient(180deg, ${biome?.bgFrom || "#0a0010"} 0%, ${
                 biome?.bgTo || "#1a0030"
               } 50%, ${biome?.bgFrom || "#0a0020"} 100%)`
@@ -5702,9 +5768,7 @@ function DownwardsNeon() {
         className="grid-bg"
         style={{
           "--grid-color":
-            gameState === "overworld" || gameState === "entering_dungeon"
-              ? "0,255,249"
-              : gameState === "playing" && biome?.gridColor
+            gameState === "playing" && biome?.gridColor
               ? biome.gridColor
               : "255,42,109",
           transition: "all 2s ease",
@@ -5804,167 +5868,6 @@ function DownwardsNeon() {
         </div>
       )}
 
-      {/* OVERWORLD SCREEN */}
-      {(gameState === "overworld" || gameState === "entering_dungeon") && overworldGridData && (
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "1000px",
-            zIndex: 5,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            minHeight: 0,
-          }}
-          className="game-screen"
-        >
-          {/* Overworld minimal HUD */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              width: "100%",
-              padding: "8px 12px",
-              marginBottom: "8px",
-              background: "rgba(0,0,0,0.5)",
-              borderRadius: "6px",
-            }}
-          >
-            <div
-              style={{
-                fontFamily: "Orbitron, sans-serif",
-                fontSize: "clamp(0.7rem, 2vw, 1rem)",
-                color: OW_PALETTE.neonCyan,
-                textShadow: `0 0 8px ${OW_PALETTE.neonCyan}`,
-                letterSpacing: "0.15em",
-              }}
-            >
-              NEO-TOKYO BAY
-            </div>
-            <div
-              style={{
-                fontFamily: '"Share Tech Mono", monospace',
-                fontSize: "clamp(0.6rem, 1.5vw, 0.85rem)",
-                color: OW_PALETTE.neonMagenta,
-                textShadow: `0 0 6px ${OW_PALETTE.neonMagenta}`,
-              }}
-            >
-              ▼ FIND THE DUNGEON ENTRANCE
-            </div>
-          </div>
-
-          {/* Overworld map */}
-          <div
-            className="map-area"
-            style={{ width: "100%" }}
-          >
-            <div
-              className="map-wrapper"
-              style={{
-                overflowX: "hidden",
-                overflowY: "hidden",
-                borderRadius: "4px",
-                position: "relative",
-                border: `2px solid ${OW_PALETTE.neonMagenta}`,
-                boxShadow: `0 0 20px ${OW_PALETTE.neonMagenta}, 0 0 40px ${OW_PALETTE.neonMagenta}4D, inset 0 0 30px ${OW_PALETTE.neonMagenta}1A`,
-              }}
-            >
-              <div
-                className="scanlines"
-                onPointerDown={(e) => {
-                  tapStartRef.current = {
-                    x: e.clientX,
-                    y: e.clientY,
-                    scrollLeft: 0,
-                    scrollTop: 0,
-                  };
-                }}
-                onPointerUp={(e) => {
-                  const start = tapStartRef.current;
-                  tapStartRef.current = null;
-                  if (!start) return;
-                  const moved = Math.hypot(e.clientX - start.x, e.clientY - start.y) > 12;
-                  if (moved) return;
-                  // Tap-to-move on overworld
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const relX = e.clientX - rect.left;
-                  const relY = e.clientY - rect.top;
-                  const cellW = rect.width / GRID_WIDTH;
-                  const cellH = rect.height / GRID_HEIGHT;
-                  const tapX = Math.floor(relX / cellW) + 1;
-                  const tapY = Math.floor(relY / cellH) + 1;
-                  const dx = Math.sign(tapX - player.x);
-                  const dy = Math.sign(tapY - player.y);
-                  if (dx !== 0 || dy !== 0) {
-                    overworldMoveRef.current(dx, dy);
-                  }
-                }}
-                onPointerCancel={() => { tapStartRef.current = null; }}
-                style={{
-                  background: "#000",
-                  padding: "8px",
-                  position: "relative",
-                  width: "100%",
-                  height: "100%",
-                  cursor: "pointer",
-                }}
-              >
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateRows: `repeat(${GRID_HEIGHT}, 1fr)`,
-                    height: "100%",
-                    fontSize: "clamp(9px, 1.2vw + 0.7vh, 24px)",
-                    lineHeight: 1,
-                    fontFamily: '"Share Tech Mono", monospace',
-                    position: "relative",
-                    zIndex: 1,
-                  }}
-                >
-                  {overworldGridData.map((row, y) => (
-                    <GridRow key={y} rowData={row} />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Overworld message overlay */}
-            {msg.text && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "6px",
-                  left: "8px",
-                  zIndex: 15,
-                  pointerEvents: "none",
-                  maxWidth: "80%",
-                }}
-              >
-                <div
-                  style={{
-                    background: "rgba(0, 0, 0, 0.75)",
-                    padding: "4px 10px",
-                    borderRadius: "3px",
-                    borderLeft: `2px solid ${msg.color}`,
-                    color: msg.color,
-                    textShadow: `0 0 8px ${msg.color}`,
-                    fontSize: "clamp(0.6rem, 2vw, 0.8rem)",
-                    fontFamily: '"Share Tech Mono", monospace',
-                    letterSpacing: "0.05em",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {msg.text}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* LEVEL TRANSITION */}
       {showLevelTransition && (
         <div
@@ -6029,7 +5932,7 @@ function DownwardsNeon() {
           {/* HUD */}
           <div className="hud-grid">
             {[
-              { label: "LVL", value: level, color: NEON.cyan },
+              { label: "LVL", value: level === 0 ? "CITY" : level, color: level === 0 ? OW_PALETTE.neonCyan : NEON.cyan },
               {
                 label: "HP",
                 value: `${hp}/${maxHp}`,
