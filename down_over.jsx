@@ -1564,10 +1564,12 @@ function DownwardsNeon() {
         allZones.add(getZone(x, y));
       }
     }
+
     setRevealedZones(allZones);
 
     setShowLevelTransition(false);
     setGameState("playing");
+    setPendingScroll(true); // <-- Ajout de cette ligne pour forcer le centrage
     showMessage(
       "◆ NEON BAY — FIND THE DUNGEON ENTRANCE ◆",
       OW_PALETTE.neonCyan,
@@ -6052,25 +6054,6 @@ function DownwardsNeon() {
             }}
           >
             ▶ INSERT COIN
-          </button>
-
-          <button
-            onClick={skipIntroToGame}
-            style={{
-              marginTop: "20px",
-              fontFamily: "Orbitron, sans-serif",
-              background: "transparent",
-              border: `1px solid ${NEON.pink}`,
-              color: NEON.pink,
-              padding: "10px 24px",
-              fontSize: "0.85rem",
-              letterSpacing: "0.22em",
-              cursor: "pointer",
-              textShadow: `0 0 8px ${NEON.pink}`,
-              boxShadow: `0 0 8px rgba(255,42,109,0.55)`,
-            }}
-          >
-            PASSER
           </button>
 
           <div
