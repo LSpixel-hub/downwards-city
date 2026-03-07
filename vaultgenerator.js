@@ -1,0 +1,564 @@
+// ============================================
+// VAULT GENERATOR — Salles aux trésors secrètes
+// Fichier autonome importé par le composant principal.
+// ============================================
+
+const GRID_WIDTH = 50;
+const GRID_HEIGHT = 21;
+const PERFECT_WEAPON_MULTIPLIER = 1.25;
+const PERFECT_ARMOR_BONUS = 2;
+
+const TILE = {
+  VOID: 0, FLOOR: 1, WALL: 2, CORRIDOR: 3, STAIRS: 4,
+  TELEPORTER: 5, WEAPON: 6, KEY: 7, POTION: 8, SCROLL: 9,
+  VENDOR: 10, GOLD: 11, BOW: 12, PRINCESS: 13, GEM: 14, ARMOR: 15,
+};
+
+// ============================================
+// TABLES DE LÉGENDAIRES
+// ============================================
+
+const LEGENDARY_WEAPONS = [
+  { name: "SUNBREAKER",    short: "SUNB", family: "CLEAVE", baseDmg: 0, bonusPct: 0.40 },
+  { name: "VOID SCYTHE",   short: "VOID", family: "CRIT",  baseDmg: 0, bonusPct: 0.35 },
+  { name: "NEON EXCALIBUR", short: "EXCL", family: "KNOCKBACK", baseDmg: 0, bonusPct: 0.45 },
+  { name: "PLASMA EDGE",   short: "PLSM", family: "CRIT",  baseDmg: 0, bonusPct: 0.30 },
+  { name: "CHRONO BLADE",  short: "CHRN", family: "CLEAVE", baseDmg: 0, bonusPct: 0.38 },
+  { name: "STELLAR MACE",  short: "STLR", family: "KNOCKBACK", baseDmg: 0, bonusPct: 0.42 },
+];
+
+const LEGENDARY_ARMORS = [
+  { name: "AEGIS OF DAWN",    bonusAR: 0, bonusPct: 0.50 },
+  { name: "NEON CARAPACE",    bonusAR: 0, bonusPct: 0.45 },
+  { name: "VOIDPLATE",        bonusAR: 0, bonusPct: 0.55 },
+  { name: "CELESTIAL GUARD",  bonusAR: 0, bonusPct: 0.40 },
+  { name: "PLASMA SHELL",     bonusAR: 0, bonusPct: 0.48 },
+];
+
+// ============================================
+// TABLE D'ÉLIXIRS (Alchemist Lab)
+// ============================================
+
+const VAULT_ELIXIRS = [
+  { name: "ELIXIR OF VITALITY", effect: "maxHp30",  desc: "+30 MAX HP", price: 0 },
+  { name: "ELIXIR OF MIGHT",    effect: "dmg10pct", desc: "+10% DMG",   price: 0 },
+  { name: "ELIXIR OF IRON",     effect: "armor10",  desc: "+10 ARMOR",  price: 0 },
+];
+
+// ============================================
+// TABLE DE SACRIFICES (Sacrifice Altar)
+// ============================================
+
+const SACRIFICE_DEALS = [
+  { name: "BLOOD PACT",    sacrificeType: "maxHp",   sacrificeAmt: 20, rewardType: "dmgBonus",      rewardAmt: 8,  desc: "-20 MAX HP → +8 DMG" },
+  { name: "IRON EXCHANGE", sacrificeType: "armor",   sacrificeAmt: 5,  rewardType: "maxHp",         rewardAmt: 15, desc: "-5 ARMOR → +15 MAX HP" },
+  { name: "PAIN FOCUS",    sacrificeType: "maxHp",   sacrificeAmt: 15, rewardType: "armor",         rewardAmt: 6,  desc: "-15 MAX HP → +6 ARMOR" },
+  { name: "DARK BARGAIN",  sacrificeType: "dmgBonus", sacrificeAmt: 3, rewardType: "armor",         rewardAmt: 8,  desc: "-3 DMG → +8 ARMOR" },
+  { name: "SOUL TRADE",    sacrificeType: "maxHp",   sacrificeAmt: 25, rewardType: "dmgBonus",      rewardAmt: 10, desc: "-25 MAX HP → +10 DMG" },
+  { name: "VOID GAMBIT",   sacrificeType: "armor",   sacrificeAmt: 8,  rewardType: "dmgBonus",      rewardAmt: 6,  desc: "-8 ARMOR → +6 DMG" },
+];
+
+// ============================================
+// FRAGMENTS DE LORE (Echo Shrine)
+// ============================================
+
+const LORE_FRAGMENTS = [
+  { minLevel: 1,  maxLevel: 10, text: "THE NEON GRID WAS NOT BUILT. IT GREW. LAYER UPON LAYER, DEEPER INTO THE VOID, EACH FLOOR A MEMORY OF THE WORLD ABOVE.", bonus: "fullHeal",  bonusDesc: "FULL HEAL" },
+  { minLevel: 1,  maxLevel: 10, text: "ONCE, THE CORRIDORS HUMMED WITH PURPOSE. NOW THEY PULSE WITH HUNGER. THE GRID FEEDS ON THOSE WHO WANDER.", bonus: "maxHp3",   bonusDesc: "+3 MAX HP" },
+  { minLevel: 11, maxLevel: 20, text: "THEY CALLED IT THE OVERDRIVE — A SIGNAL THAT PULSED THROUGH EVERY CORRIDOR. THOSE WHO FOLLOWED IT DESCENDED. NONE RETURNED THE SAME.", bonus: "dmg2", bonusDesc: "+2 DMG" },
+  { minLevel: 11, maxLevel: 20, text: "THE VENDORS REMEMBER THE OLD WORLD. THEY TRADE IN GOLD BECAUSE IT IS ALL THAT STILL SHINES DOWN HERE.", bonus: "armor2",   bonusDesc: "+2 ARMOR" },
+  { minLevel: 21, maxLevel: 30, text: "THE PRINCESS WAS NOT CAPTURED. SHE CHOSE THE DEPTHS. 'THE SURFACE HAS FORGOTTEN HOW TO DREAM,' SHE SAID.", bonus: "fullHeal", bonusDesc: "FULL HEAL" },
+  { minLevel: 21, maxLevel: 30, text: "FIVE GEMS WERE SCATTERED WHEN THE GRID FRACTURED. EACH HOLDS A FRAGMENT OF THE OLD POWER. TOGETHER, THEY COULD RESHAPE EVERYTHING.", bonus: "maxHp5", bonusDesc: "+5 MAX HP" },
+  { minLevel: 31, maxLevel: 40, text: "THERE WAS A FIFTH GEM ONCE — BLACK AS THE VOID BETWEEN FLOORS. IT SHATTERED, AND FROM ITS FRAGMENTS, THE MONSTERS LEARNED TO THINK.", bonus: "dmg3", bonusDesc: "+3 DMG" },
+  { minLevel: 31, maxLevel: 40, text: "THE DEEPEST FLOORS REMEMBER EVERY STEP. EVERY DEATH ECHOES FORWARD, TEACHING THE GRID WHAT HURTS AND WHAT HEALS.", bonus: "armor3", bonusDesc: "+3 ARMOR" },
+  { minLevel: 41, maxLevel: 50, text: "YOU ARE NOT THE FIRST TO REACH THIS DEEP. THE GRID REMEMBERS EVERY STEP. EVERY DEATH. EVERY CHOICE. IT IS LEARNING FROM YOU.", bonus: "maxHp8", bonusDesc: "+8 MAX HP" },
+  { minLevel: 41, maxLevel: 50, text: "AT THE BOTTOM, THEY SAY, THE NEON FADES TO WHITE. NOT DARKNESS — LIGHT. THE KIND THAT ERASES EVERYTHING IT TOUCHES.", bonus: "dmg5", bonusDesc: "+5 DMG" },
+];
+
+// ============================================
+// TABLE DE BOSS (Boss Arena)
+// ============================================
+
+const VAULT_BOSSES = [
+  { name: "NEON HYDRA",    char: "H", ai: "STALKER",    hpMult: 3.0, dmgMult: 1.5, color1: "#ff0055", color2: "#ff6b35", effect: { type: "REGEN", value: 5 },                              minions: 2 },
+  { name: "CHROME GOLEM",  char: "G", ai: "JUGGERNAUT", hpMult: 4.0, dmgMult: 2.0, color1: "#aaaaaa", color2: "#4d6dff", effect: { type: "PARRY", chance: 0.5, msg: "PARRY" },              minions: 1 },
+  { name: "VOID EMPRESS",  char: "E", ai: "ERRATIC",    hpMult: 2.5, dmgMult: 1.3, color1: "#b026ff", color2: "#ff00ff", effect: { type: "VAMPIRISM", chance: 0.3, msg: "LIFE DRAIN" },     minions: 3 },
+  { name: "SYNTH REAPER",  char: "R", ai: "STALKER",    hpMult: 2.0, dmgMult: 1.8, color1: "#00fff9", color2: "#39ff14", effect: { type: "DRAIN", chance: 0.35, msg: "STAT DRAIN" },        minions: 2 },
+  { name: "BLOOD TITAN",   char: "T", ai: "JUGGERNAUT", hpMult: 5.0, dmgMult: 1.2, color1: "#ff0055", color2: "#ff2a6d", effect: { type: "HEAVY_BLOW", chance: 0.4, msg: "HEAVY BLOW" },    minions: 0 },
+  { name: "PHANTOM QUEEN", char: "Q", ai: "ERRATIC",    hpMult: 2.2, dmgMult: 1.6, color1: "#ffffff", color2: "#b026ff", effect: { type: "WALL_PHASE" },                                    minions: 3 },
+];
+
+export const getVaultStairsChance = (level) => {
+  if (level <= 5) return 0;
+  if (level <= 15) return 0.03;
+  if (level <= 30) return 0.05;
+  return 0.07;
+};
+const stripPerfectPrefix = (name) => {
+  if (!name) return "";
+  return name.startsWith("Perfect ") ? name.slice(8) : name;
+};
+
+const forcePerfectWeapon = (weapon) => {
+  if (!weapon) return weapon;
+  const baseDmg = Math.max(1, weapon.baseDmg ?? weapon.dmg ?? 1);
+  const alreadyPerfect =
+    weapon.isPerfect &&
+    typeof weapon.perfectBonus === "number" &&
+    weapon.perfectBonus > 0 &&
+    (weapon.dmg ?? 0) > baseDmg;
+  const perfectBonus = alreadyPerfect
+    ? weapon.perfectBonus
+    : Math.max(1, Math.round(baseDmg * (PERFECT_WEAPON_MULTIPLIER - 1)));
+  const finalDmg = alreadyPerfect ? weapon.dmg : baseDmg + perfectBonus;
+  return {
+    ...weapon,
+    name: `Perfect ${stripPerfectPrefix(weapon.name)}`,
+    baseDmg,
+    perfectBonus,
+    dmg: finalDmg,
+    isPerfect: true,
+  };
+};
+
+const forcePerfectArmor = (armor) => {
+  if (!armor) return armor;
+  const finalAr = armor.isPerfect
+    ? Math.max(1, armor.ar ?? 1)
+    : Math.max(1, (armor.ar ?? 1) + PERFECT_ARMOR_BONUS);
+  return {
+    ...armor,
+    name: `Perfect ${stripPerfectPrefix(armor.name)}`,
+    ar: finalAr,
+    isPerfect: true,
+  };
+};
+
+// ============================================
+// GÉNÉRATION DE SALLE THÉMATIQUE
+// ============================================
+
+export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getArmorForLevel, GEMS) => {
+  const newMap = Array(GRID_HEIGHT + 1).fill(null).map(() => Array(GRID_WIDTH + 1).fill(TILE.VOID));
+  const centerX = Math.floor(GRID_WIDTH / 2);
+  const centerY = Math.floor(GRID_HEIGHT / 2);
+  const radius = 6;
+
+  // 1. Sculpter la salle en losange (distance de Manhattan pondérée)
+  for (let y = 1; y <= GRID_HEIGHT; y++) {
+    for (let x = 1; x <= GRID_WIDTH; x++) {
+      const dist = Math.abs(x - centerX) + Math.abs(y - centerY) * 2;
+      if (dist <= radius * 2.5) {
+        newMap[y][x] = TILE.FLOOR;
+      } else if (dist <= radius * 2.5 + 2) {
+        newMap[y][x] = TILE.WALL;
+      }
+    }
+  }
+
+  // 2. Positions d'entrée (bas) et sortie (haut)
+  const playerPos = { x: centerX, y: centerY + radius };
+  const stairsPos = { x: centerX, y: centerY - radius };
+
+  // S'assurer que les positions sont sur du sol
+  newMap[playerPos.y][playerPos.x] = TILE.FLOOR;
+  newMap[stairsPos.y][stairsPos.x] = TILE.STAIRS;
+
+  // 3. Variables de retour par défaut
+  let customBiome = {};
+  let weaponData = null;
+  let armorData = null;
+  let vendorData = null;
+  let gemData = null;
+  let monsters = [];
+
+  // 4. TIRAGE AU SORT DU THÈME (7 thèmes)
+  // Probabilités : Golden Bank 15%, Armory 15%, Alchemist 14%, Crystal 14%,
+  //                Sacrifice 14%, Echo Shrine 14%, Boss Arena 14%
+  // Boss Arena requiert level >= 10, sinon fallback Echo Shrine
+  const themeRoll = Math.random();
+
+  if (themeRoll < 0.15) {
+    // ==========================================
+    // THÈME 1 : THE GOLDEN BANK (Or massif)
+    // ==========================================
+    customBiome = {
+      name: "THE GOLDEN BANK",
+      floorColor: "#fff01f",
+      corridorColor: "#ffaa00",
+      floorChars: ["¤", "·", "·", "˙", "·"],
+      gridColor: "255,240,31",
+      bgFrom: "#1a1500",
+      bgTo: "#332500",
+      plasmaColor1: "#ffaa00",
+      plasmaColor2: "#fff01f",
+      isVault: true,
+      vaultGoldMultiplier: 3,
+    };
+
+    // Remplir le centre d'or (grille 7×5, densité ~70%)
+    for (let y = centerY - 2; y <= centerY + 2; y++) {
+      for (let x = centerX - 3; x <= centerX + 3; x++) {
+        if (y >= 1 && y <= GRID_HEIGHT && x >= 1 && x <= GRID_WIDTH) {
+          if (newMap[y][x] === TILE.FLOOR && Math.random() < 0.7) {
+            newMap[y][x] = TILE.GOLD;
+          }
+        }
+      }
+    }
+
+  } else if (themeRoll < 0.30) {
+    // ==========================================
+    // THÈME 2 : ANCIENT ARMORY (Équipement)
+    // ==========================================
+    customBiome = {
+      name: "ANCIENT ARMORY",
+      floorColor: "#aaaaaa",
+      corridorColor: "#ff0055",
+      floorChars: ["▪", "▫", "·", "·", "·"],
+      gridColor: "255,0,85",
+      bgFrom: "#150000",
+      bgTo: "#250500",
+      plasmaColor1: "#ff0055",
+      plasmaColor2: "#aaaaaa",
+      isVault: true,
+    };
+
+    const boostedLevel = Math.min(50, level + 15);
+
+    // 30% chance : objet légendaire, 70% : surclassé parfait
+    if (Math.random() < 0.3) {
+      // Légendaire nommé — arme
+      const leg = LEGENDARY_WEAPONS[Math.floor(Math.random() * LEGENDARY_WEAPONS.length)];
+      const baseWeapon = getWeaponForLevel(boostedLevel);
+      const legendaryDmg = Math.round(baseWeapon.dmg * (1 + leg.bonusPct));
+      weaponData = {
+        name: leg.name,
+        short: leg.short,
+        baseDmg: legendaryDmg,
+        perfectBonus: 0,
+        dmg: legendaryDmg,
+        family: leg.family,
+        isPerfect: true,
+        isLegendary: true,
+      };
+    } else {
+      // Surclassement +15 niveaux, parfait garanti
+      weaponData = forcePerfectWeapon(getWeaponForLevel(boostedLevel));
+    }
+
+    if (Math.random() < 0.3) {
+      // Légendaire nommé — armure
+      const leg = LEGENDARY_ARMORS[Math.floor(Math.random() * LEGENDARY_ARMORS.length)];
+      const baseArmor = getArmorForLevel(boostedLevel);
+      if (baseArmor) {
+        const legendaryAR = Math.round(baseArmor.ar * (1 + leg.bonusPct));
+        armorData = {
+          name: leg.name,
+          ar: legendaryAR,
+          isPerfect: true,
+          isLegendary: true,
+        };
+      } else {
+        armorData = { name: "AEGIS OF DAWN", ar: 12, isPerfect: true, isLegendary: true };
+      }
+    } else {
+      armorData = forcePerfectArmor(getArmorForLevel(boostedLevel));
+      if (!armorData) {
+        armorData = { name: "Perfect Ancient Shield", ar: 8, isPerfect: true };
+      }
+    }
+
+    newMap[centerY][centerX - 2] = TILE.WEAPON;
+    newMap[centerY][centerX + 2] = TILE.ARMOR;
+
+  } else if (themeRoll < 0.44) {
+    // ==========================================
+    // THÈME 3 : ALCHEMIST LAB (Potions & Élixirs)
+    // ==========================================
+    customBiome = {
+      name: "ALCHEMIST LAB",
+      floorColor: "#00fff9",
+      corridorColor: "#b026ff",
+      floorChars: ["∘", "·", "⁘", "·", "·"],
+      gridColor: "0,255,249",
+      bgFrom: "#001015",
+      bgTo: "#002030",
+      plasmaColor1: "#00fff9",
+      plasmaColor2: "#b026ff",
+      isVault: true,
+    };
+
+    // Vendeur gratuit au centre — élixir aléatoire
+    newMap[centerY][centerX] = TILE.VENDOR;
+    newMap[centerY][centerX - 2] = TILE.POTION;
+    newMap[centerY][centerX + 2] = TILE.POTION;
+    newMap[centerY - 2][centerX] = TILE.SCROLL;
+
+    const elixir = VAULT_ELIXIRS[Math.floor(Math.random() * VAULT_ELIXIRS.length)];
+    vendorData = { ...elixir };
+
+  } else if (themeRoll < 0.58) {
+    // ==========================================
+    // THÈME 4 : CRYSTAL CAVERN (Gemmes)
+    // ==========================================
+    customBiome = {
+      name: "CRYSTAL CAVERN",
+      floorColor: "#b026ff",
+      corridorColor: "#ff2a6d",
+      floorChars: ["⟡", "⊹", "·", "·", "·"],
+      gridColor: "176,38,255",
+      bgFrom: "#100020",
+      bgTo: "#200040",
+      plasmaColor1: "#b026ff",
+      plasmaColor2: "#ff2a6d",
+      isVault: true,
+    };
+
+    // Chercher une gemme non débloquée
+    const availableGems = unlockedGems
+      .map((level, idx) => (level < 3 ? idx : -1))
+      .filter((idx) => idx >= 0);
+
+    if (availableGems.length > 0) {
+      const gemIdx = availableGems[Math.floor(Math.random() * availableGems.length)];
+      gemData = { ...GEMS[gemIdx], idx: gemIdx };
+      newMap[centerY][centerX] = TILE.GEM;
+    } else {
+      // Toutes les gemmes débloquées → compensation en or
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -2; dx <= 2; dx++) {
+          const gy = centerY + dy;
+          const gx = centerX + dx;
+          if (gy >= 1 && gy <= GRID_HEIGHT && gx >= 1 && gx <= GRID_WIDTH) {
+            if (newMap[gy][gx] === TILE.FLOOR) {
+              newMap[gy][gx] = TILE.GOLD;
+            }
+          }
+        }
+      }
+    }
+
+  } else if (themeRoll < 0.72) {
+    // ==========================================
+    // THÈME 5 : SACRIFICE ALTAR
+    // ==========================================
+    customBiome = {
+      name: "SACRIFICE ALTAR",
+      floorColor: "#8b0000",
+      corridorColor: "#b026ff",
+      floorChars: ["†", "·", "·", "‡", "·"],
+      gridColor: "139,0,0",
+      bgFrom: "#0a0008",
+      bgTo: "#1a0015",
+      plasmaColor1: "#8b0000",
+      plasmaColor2: "#b026ff",
+      isVault: true,
+    };
+
+    // Placer un vendeur-autel au centre
+    newMap[centerY][centerX] = TILE.VENDOR;
+
+    // Choisir un deal aléatoire
+    const deal = SACRIFICE_DEALS[Math.floor(Math.random() * SACRIFICE_DEALS.length)];
+    vendorData = {
+      name: deal.name,
+      effect: "sacrifice",
+      desc: deal.desc,
+      sacrificeType: deal.sacrificeType,
+      sacrificeAmt: deal.sacrificeAmt,
+      rewardType: deal.rewardType,
+      rewardAmt: deal.rewardAmt,
+      price: 0,
+    };
+
+  } else if (themeRoll < 0.86 || level < 10) {
+    // ==========================================
+    // THÈME 6 : ECHO SHRINE (Lore)
+    // ==========================================
+    // Salle plus intime (radius réduit)
+    // On ré-sculpte la salle avec un rayon plus petit
+    const shrineRadius = 4;
+    for (let y = 1; y <= GRID_HEIGHT; y++) {
+      for (let x = 1; x <= GRID_WIDTH; x++) {
+        const dist = Math.abs(x - centerX) + Math.abs(y - centerY) * 2;
+        if (dist <= shrineRadius * 2.5) {
+          newMap[y][x] = TILE.FLOOR;
+        } else if (dist <= shrineRadius * 2.5 + 2) {
+          newMap[y][x] = TILE.WALL;
+        } else {
+          newMap[y][x] = TILE.VOID;
+        }
+      }
+    }
+
+    // Recalculer positions entrée/sortie pour le rayon réduit
+    playerPos.y = centerY + shrineRadius;
+    stairsPos.y = centerY - shrineRadius;
+    newMap[playerPos.y][playerPos.x] = TILE.FLOOR;
+    newMap[stairsPos.y][stairsPos.x] = TILE.STAIRS;
+
+    customBiome = {
+      name: "ECHO SHRINE",
+      floorColor: "#00cccc",
+      corridorColor: "#006666",
+      floorChars: ["·", "∴", "·", "·", "˙"],
+      gridColor: "0,200,200",
+      bgFrom: "#000a0f",
+      bgTo: "#001520",
+      plasmaColor1: "#006666",
+      plasmaColor2: "#00cccc",
+      isVault: true,
+    };
+
+    // Monolithe au centre
+    newMap[centerY][centerX] = TILE.VENDOR;
+
+    // Choisir un fragment de lore adapté au niveau
+    const pool = LORE_FRAGMENTS.filter(f => level >= f.minLevel && level <= f.maxLevel);
+    const fragment = pool.length > 0
+      ? pool[Math.floor(Math.random() * pool.length)]
+      : LORE_FRAGMENTS[Math.floor(Math.random() * LORE_FRAGMENTS.length)];
+
+    vendorData = {
+      name: "ECHO SHRINE",
+      effect: "lore",
+      loreText: fragment.text,
+      loreBonus: fragment.bonus,
+      desc: fragment.bonusDesc,
+      price: 0,
+    };
+
+  } else {
+    // ==========================================
+    // THÈME 7 : BOSS ARENA
+    // ==========================================
+    // Arène plus grande (radius 8) avec piliers tactiques
+    const arenaRadius = 8;
+    for (let y = 1; y <= GRID_HEIGHT; y++) {
+      for (let x = 1; x <= GRID_WIDTH; x++) {
+        const dist = Math.abs(x - centerX) + Math.abs(y - centerY) * 2;
+        if (dist <= arenaRadius * 2.5) {
+          newMap[y][x] = TILE.FLOOR;
+        } else if (dist <= arenaRadius * 2.5 + 2) {
+          newMap[y][x] = TILE.WALL;
+        } else {
+          newMap[y][x] = TILE.VOID;
+        }
+      }
+    }
+
+    // Piliers tactiques (cover)
+    const pillarOffsets = [
+      [-4, -2], [4, -2], [-4, 2], [4, 2],
+    ];
+    for (const [px, py] of pillarOffsets) {
+      const wx = centerX + px;
+      const wy = centerY + py;
+      if (wx >= 1 && wx <= GRID_WIDTH && wy >= 1 && wy <= GRID_HEIGHT) {
+        newMap[wy][wx] = TILE.WALL;
+      }
+    }
+
+    // Recalculer positions pour le rayon élargi
+    playerPos.y = Math.min(GRID_HEIGHT, centerY + arenaRadius);
+    stairsPos.y = Math.max(1, centerY - arenaRadius);
+    newMap[playerPos.y][playerPos.x] = TILE.FLOOR;
+    // L'escalier est verrouillé (needKey) — déblocage quand le boss meurt
+    newMap[stairsPos.y][stairsPos.x] = TILE.STAIRS;
+
+    // Choisir un boss
+    const boss = VAULT_BOSSES[Math.floor(Math.random() * VAULT_BOSSES.length)];
+
+    // Calculer les stats du boss basées sur le palier de monstres du niveau
+    // On utilise des multiplicateurs sur les stats du Dragon (tier max)
+    const baseBossHp = 50 + level * 3;   // Scale avec le niveau
+    const baseBossDmg = 10 + level;
+
+    const bossMonster = {
+      char: boss.char,
+      name: boss.name,
+      hp: Math.round(baseBossHp * boss.hpMult),
+      dmg: Math.round(baseBossDmg * boss.dmgMult),
+      color: boss.color1,
+      effect: boss.effect,
+      ai: boss.ai,
+      x: centerX,
+      y: centerY,
+      currentHp: Math.round(baseBossHp * boss.hpMult),
+      zone: 8, // zone centrale
+      isBoss: true,
+    };
+
+    monsters = [bossMonster];
+
+    // Ajouter les minions autour du boss
+    const minionOffsets = [[-2, -1], [2, -1], [-2, 1], [2, 1], [0, -2], [0, 2]];
+    const shuffledOffsets = minionOffsets.sort(() => Math.random() - 0.5);
+    const minionHp = 15 + level * 1.5;
+    const minionDmg = 5 + Math.floor(level * 0.5);
+
+    for (let i = 0; i < boss.minions && i < shuffledOffsets.length; i++) {
+      const [mx, my] = shuffledOffsets[i];
+      const minionX = centerX + mx;
+      const minionY = centerY + my;
+      if (minionX >= 1 && minionX <= GRID_WIDTH && minionY >= 1 && minionY <= GRID_HEIGHT
+        && newMap[minionY][minionX] === TILE.FLOOR) {
+        monsters.push({
+          char: "m",
+          name: `${boss.name}'s Minion`,
+          hp: Math.round(minionHp),
+          dmg: Math.round(minionDmg),
+          color: boss.color2,
+          effect: null,
+          ai: "NORMAL",
+          x: minionX,
+          y: minionY,
+          currentHp: Math.round(minionHp),
+          zone: 8,
+        });
+      }
+    }
+
+    customBiome = {
+      name: `BOSS: ${boss.name}`,
+      floorColor: boss.color1,
+      corridorColor: boss.color2,
+      floorChars: ["·", "‡", "·", "·", "†"],
+      gridColor: boss.color1.slice(1).match(/.{2}/g).map(h => parseInt(h, 16)).join(","),
+      bgFrom: "#0a0000",
+      bgTo: "#1a0505",
+      plasmaColor1: boss.color1,
+      plasmaColor2: boss.color2,
+      isVault: true,
+      isBoss: true,
+    };
+
+    // Récompense : arme ou armure parfaite +15 niveaux
+    const boostedLevel = Math.min(50, level + 15);
+    weaponData = forcePerfectWeapon(getWeaponForLevel(boostedLevel));
+    armorData = forcePerfectArmor(getArmorForLevel(boostedLevel));
+
+    // Placer arme et armure comme récompense (accessibles après le combat)
+    newMap[centerY][centerX - 3] = TILE.WEAPON;
+    newMap[centerY][centerX + 3] = TILE.ARMOR;
+    // Potion de soin post-combat
+    newMap[stairsPos.y + 1][stairsPos.x] = TILE.POTION;
+  }
+
+  return {
+    map: newMap,
+    playerPos,
+    stairsPos,
+    tp1: { x: 0, y: 0, active: false },
+    tp2: { x: 0, y: 0, active: false },
+    monsters,
+    needKey: customBiome.isBoss ? true : false,
+    vendorData,
+    weaponData,
+    armorData,
+    bowData: null,
+    gemData,
+    customBiome,
+  };
+};
