@@ -43,6 +43,29 @@ import {
 
 const GRID_WIDTH = 50;
 const GRID_HEIGHT = 21;
+const TITLE_TO_LORE_DELAY = 5000;
+
+const PROLOGUE_LINES = [
+  "PROLOGUE",
+  "",
+  "Bettie was no ordinary girl. In that humid summer of the 80s, while the youth of the Riviera consumed themselves under the strobe lights of nightclubs, she preferred the hypnotic glow of her bedroom. She was a beautiful anomaly, a pioneer of the shadows: a gamer.",
+  "",
+  "Around her, the CRT screens of her ZX Spectrum and her trusty Amstrad CPC crackled softly in the dim light. She loved spending her nights like this, the window wide open to the seaside. Lulled by the surf of the waves and the mechanical clatter of her keyboard, she would let demos from the pirate scene run or delve deep into the corridors of her favorite exploration games.",
+  "",
+  "That night, the air was electric. Bettie was plunged into the procedurally generated depths of Rogue, typing her command lines with deadly precision. It was then that the full moon began to radiate an abnormal glow, casting a magenta, almost sickly glare over the sea foam.",
+  "",
+  "The ocean wind abruptly died down. In its place, an icy draft, laden with the smell of ancient dust and ozone, swept into the room. Beneath the asphalt and neon lights of the city, something very old had awakened. Malevolent forces, lurking in catacombs forgotten for millennia, had just found a rift to the surface. The Amstrad's screen fractured with a terrifying sizzle, and the shadows in the room materialized.",
+  "",
+  "Bettie had no time to flee. The darkness swallowed her whole. She only had time to let out a scream. A shrill, visceral howl of pure terror.",
+  "",
+  "Further down, on the coastal road, the roar of a V6 engine tore through the night. You were behind the wheel of your Alpine A310, the yellow headlights frantically sweeping across the palm trees. The engine was howling, the car radio was blasting bass, but that scream... It pierced through the bodywork, the sound of the wind, and your soul.",
+  "",
+  "You slammed on the brake pedal. The tires squealed in turn, leaving long trails of burnt rubber on the asphalt before the Alpine came to a dead stop right on the shore, just meters from the edge.",
+  "",
+  "Silence fell again, heavy and threatening. High above, the window of Bettie's room was now blinking only to the frantic rhythm of a system error. The bowels of the city had just swallowed her up. You clenched your fists on the leather steering wheel. The gates of hell had just opened beneath the Riviera.",
+  "",
+  "There is no choice left. You have to save Bettie.",
+];
 
 // Tile types
 const TILE = {
@@ -842,6 +865,7 @@ function DownwardsNeon() {
   const delayedMessageTimerRef = useRef(null);
   const screenShakeTimerRef = useRef(null);
   const levelTransitionTimerRef = useRef(null);
+  const titleLoreTimerRef = useRef(null);
 
   // ======== A1 : Toutes les refs useLatest pour lecture dans les callbacks ========
   const playerRef = useLatest(player);
@@ -4902,13 +4926,42 @@ function DownwardsNeon() {
   const executeAutoPathRef = useRef(executeAutoPath);
   executeAutoPathRef.current = executeAutoPath;
 
+  const goToLore = useCallback(() => {
+    setGameState((prev) => (prev === "title" ? "lore" : prev));
+  }, []);
+
+  const skipIntroToGame = useCallback(() => {
+    enterOverworldRef.current();
+  }, []);
+
   // ======================================================================================
+
+  useEffect(() => {
+    if (titleLoreTimerRef.current) {
+      clearTimeout(titleLoreTimerRef.current);
+      titleLoreTimerRef.current = null;
+    }
+
+    if (gameState !== "title") return;
+
+    titleLoreTimerRef.current = setTimeout(() => {
+      goToLore();
+      titleLoreTimerRef.current = null;
+    }, TITLE_TO_LORE_DELAY);
+
+    return () => {
+      if (titleLoreTimerRef.current) {
+        clearTimeout(titleLoreTimerRef.current);
+        titleLoreTimerRef.current = null;
+      }
+    };
+  }, [gameState, goToLore]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
       const gs = gameStateRef.current;
-      if (gs === "title") {
-        enterOverworldRef.current();
+      if (gs === "title" || gs === "lore") {
+        skipIntroToGame();
         return;
       }
       if (gs === "gameover" || gs === "victory") {
@@ -5036,7 +5089,7 @@ function DownwardsNeon() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [skipIntroToGame]);
 
   // ======== MONSTER INSPECT: Helper to get tile coords from pointer event ========
   const hoveredMonsterRef = useRef(null);
@@ -5496,6 +5549,20 @@ function DownwardsNeon() {
           @keyframes gridGlow { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.9; } }
           @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
           @keyframes neonFlicker { 0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; } 20%, 24%, 55% { opacity: 0.6; } }
+          @keyframes crtFlicker {
+            0% { opacity: 0.96; }
+            5% { opacity: 0.93; }
+            10% { opacity: 0.99; }
+            15% { opacity: 0.95; }
+            35% { opacity: 0.985; }
+            55% { opacity: 0.94; }
+            75% { opacity: 0.99; }
+            100% { opacity: 0.965; }
+          }
+          @keyframes loreScroll {
+            0% { transform: translateY(110%) rotateX(20deg); }
+            100% { transform: translateY(-240%) rotateX(25deg); }
+          }
           @keyframes borderGlow { 0%, 100% { box-shadow: 0 0 5px ${NEON.pink}, 0 0 10px ${NEON.pink}, 0 0 20px ${NEON.pink}; } 50% { box-shadow: 0 0 10px ${NEON.cyan}, 0 0 20px ${NEON.cyan}, 0 0 40px ${NEON.cyan}; } }
           @keyframes voidDanger { 0%, 100% { color: ${NEON.yellow}; text-shadow: 0 0 5px ${NEON.yellow}; } 50% { color: ${NEON.red}; text-shadow: 0 0 10px ${NEON.red}, 0 0 20px ${NEON.red}; } }
           @keyframes effectPop { 0% { opacity: 0; transform: scale(0.5); } 30% { opacity: 1; transform: scale(1.4); } 100% { opacity: 1; transform: scale(1); } }
@@ -5541,6 +5608,92 @@ function DownwardsNeon() {
             transition: box-shadow 1.5s ease, background 1.5s ease;
           }
   
+          .lore-screen {
+            position: relative;
+            z-index: 6;
+            width: min(980px, 100%);
+            height: calc(100vh - 20px);
+            height: calc(100dvh - 20px);
+            overflow: hidden;
+            border: 2px solid rgba(5, 217, 232, 0.45);
+            box-shadow: 0 0 25px rgba(5, 217, 232, 0.35), inset 0 0 50px rgba(0, 0, 0, 0.5);
+            background: radial-gradient(circle at center, rgba(20, 0, 40, 0.75) 0%, rgba(5, 0, 12, 0.92) 70%);
+            animation: crtFlicker 0.18s infinite;
+          }
+
+          .lore-screen::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+              0deg,
+              rgba(255, 255, 255, 0.03) 0px,
+              rgba(255, 255, 255, 0.03) 1px,
+              rgba(0, 0, 0, 0.3) 1px,
+              rgba(0, 0, 0, 0.3) 3px
+            );
+            pointer-events: none;
+            z-index: 3;
+          }
+
+          .lore-content {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            padding: 20vh 14% 22vh;
+            perspective: 450px;
+          }
+
+          .lore-scroll {
+            color: ${NEON.cyan};
+            text-shadow: 0 0 7px rgba(5, 217, 232, 0.75);
+            line-height: 1.8;
+            font-size: clamp(0.88rem, 2vw, 1.08rem);
+            letter-spacing: 0.06em;
+            transform-origin: 50% 100%;
+            animation: loreScroll 52s linear forwards;
+          }
+
+          .lore-scroll p {
+            margin: 0 0 1.2rem;
+          }
+
+          .lore-title {
+            text-align: center;
+            margin-bottom: 2rem !important;
+            color: ${NEON.pink};
+            letter-spacing: 0.35em;
+            font-family: "Orbitron", sans-serif;
+            text-shadow: 0 0 12px ${NEON.pink};
+          }
+
+          .lore-actions {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            z-index: 4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            color: ${NEON.purple};
+            font-size: 0.78rem;
+            text-shadow: 0 0 6px rgba(191, 90, 242, 0.7);
+          }
+
+          .lore-skip-btn {
+            font-family: "Orbitron", sans-serif;
+            background: rgba(5, 0, 20, 0.8);
+            border: 1px solid ${NEON.pink};
+            color: ${NEON.pink};
+            padding: 10px 28px;
+            letter-spacing: 0.22em;
+            cursor: pointer;
+            text-shadow: 0 0 8px ${NEON.pink};
+            box-shadow: 0 0 10px rgba(255, 42, 109, 0.45);
+          }
+
           .mobile-only-btn {
             display: none !important;
           }
@@ -5833,7 +5986,7 @@ function DownwardsNeon() {
           />
 
           <button
-            onClick={enterOverworld}
+            onClick={skipIntroToGame}
             style={{
               fontFamily: "Orbitron, sans-serif",
               background: "transparent",
@@ -5853,6 +6006,25 @@ function DownwardsNeon() {
             ▶ INSERT COIN
           </button>
 
+          <button
+            onClick={skipIntroToGame}
+            style={{
+              marginTop: "20px",
+              fontFamily: "Orbitron, sans-serif",
+              background: "transparent",
+              border: `1px solid ${NEON.pink}`,
+              color: NEON.pink,
+              padding: "10px 24px",
+              fontSize: "0.85rem",
+              letterSpacing: "0.22em",
+              cursor: "pointer",
+              textShadow: `0 0 8px ${NEON.pink}`,
+              boxShadow: `0 0 8px rgba(255,42,109,0.55)`,
+            }}
+          >
+            PASSER
+          </button>
+
           <div
             style={{
               marginTop: "60px",
@@ -5868,6 +6040,28 @@ function DownwardsNeon() {
               ◆ F: FIRE | T: TELEPORT | R: PRAY | S: STAIRS ◆
             </p>
             <p style={{ color: NEON.cyan }}>◆ 1-6 (TOP ROW) = CHANGE CLASS ◆</p>
+          </div>
+        </div>
+      )}
+
+      {/* LORE SCREEN */}
+      {gameState === "lore" && (
+        <div className="lore-screen">
+          <div className="lore-content">
+            <div className="lore-scroll">
+              {PROLOGUE_LINES.map((line, index) => (
+                <p key={`${index}-${line.slice(0, 8)}`} className={index === 0 ? "lore-title" : ""}>
+                  {line || "\u00a0"}
+                </p>
+              ))}
+            </div>
+          </div>
+
+          <div className="lore-actions">
+            <button className="lore-skip-btn" onClick={skipIntroToGame}>
+              PASSER
+            </button>
+            <span>Appuyez sur une touche pour lancer la partie</span>
           </div>
         </div>
       )}
