@@ -5371,8 +5371,8 @@ function DownwardsNeon() {
           const isStairs = overworldRawMap[realY]?.[realX] === OW_TILE.STAIRS;
           row.push({
             char: rendered.char,
-            color: rendered.color,
-            glow: rendered.glow || "none",
+            color: isStairs ? "#ffffff" : rendered.color,
+            glow: isStairs ? glowStyle("#ffffff") : (rendered.glow || "none"),
             animation: isStairs
               ? "flash 0.7s ease-in-out infinite"
               : rendered.animClass
@@ -6161,7 +6161,7 @@ function DownwardsNeon() {
                 color: NEON.yellow,
                 danger: isVoidDanger,
               },
-              { label: "ARM", value: armor, color: "#9fb7c9" },
+              { label: "ARM", value: armor, color: "#4a90d9" },
               {
                 label: "CLASS",
                 value:

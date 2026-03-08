@@ -12,7 +12,7 @@ export const makeFloorObjective = (
   totalMonsters = 0,
   totalZones = 0
 ) => {
-  if (isVaultFloor || level >= 50) return null;
+  if (isVaultFloor || level <= 1 || level >= 50) return null;
 
   // Challenges appear only on some floors.
   if (Math.random() > 0.35) return null;
