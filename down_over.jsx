@@ -43,7 +43,6 @@ import {
 
 const GRID_WIDTH = 50;
 const GRID_HEIGHT = 21;
-const TITLE_TO_LORE_DELAY = 4000;
 
 const PROLOGUE_LINES = [
   "PROLOGUE",
@@ -4958,31 +4957,15 @@ function DownwardsNeon() {
 
   // ======================================================================================
 
-  useEffect(() => {
-    if (titleLoreTimerRef.current) {
-      clearTimeout(titleLoreTimerRef.current);
-      titleLoreTimerRef.current = null;
-    }
-
-    if (gameState !== "title") return;
-
-    titleLoreTimerRef.current = setTimeout(() => {
-      goToLore();
-      titleLoreTimerRef.current = null;
-    }, TITLE_TO_LORE_DELAY);
-
-    return () => {
-      if (titleLoreTimerRef.current) {
-        clearTimeout(titleLoreTimerRef.current);
-        titleLoreTimerRef.current = null;
-      }
-    };
-  }, [gameState, goToLore]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
       const gs = gameStateRef.current;
-      if (gs === "title" || gs === "lore") {
+      if (gs === "title") {
+        goToLore();
+        return;
+      }
+      if (gs === "lore") {
         skipIntroToGame();
         return;
       }
@@ -5111,7 +5094,7 @@ function DownwardsNeon() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [skipIntroToGame]);
+  }, [skipIntroToGame, goToLore]);
 
   // ======== MONSTER INSPECT: Helper to get tile coords from pointer event ========
   const hoveredMonsterRef = useRef(null);
@@ -5668,23 +5651,8 @@ function DownwardsNeon() {
             border: 2px solid rgba(5, 217, 232, 0.45);
             box-shadow: 0 0 25px rgba(5, 217, 232, 0.35), inset 0 0 50px rgba(0, 0, 0, 0.5);
             background: radial-gradient(circle at center, rgba(20, 0, 40, 0.75) 0%, rgba(5, 0, 12, 0.92) 70%);
-            animation: crtFlicker 0.18s infinite;
           }
 
-          .lore-screen::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: repeating-linear-gradient(
-              0deg,
-              rgba(255, 255, 255, 0.03) 0px,
-              rgba(255, 255, 255, 0.03) 1px,
-              rgba(0, 0, 0, 0.3) 1px,
-              rgba(0, 0, 0, 0.3) 3px
-            );
-            pointer-events: none;
-            z-index: 3;
-          }
 
          .lore-content {
             position: absolute;
@@ -6049,7 +6017,7 @@ function DownwardsNeon() {
           />
 
           <button
-            onClick={skipIntroToGame}
+            onClick={goToLore}
             style={{
               fontFamily: "Orbitron, sans-serif",
               background: "transparent",
