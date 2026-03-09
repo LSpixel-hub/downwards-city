@@ -101,13 +101,13 @@ export const PALETTE = {
   // Lampadaires
   streetlightGlow: "#fffbe6",
 
-  // === CIEL — Dégradé Progressif (Teintes volontairement poussées) ===
-  sky0: "#252b61", // Zone 0 : Bleu/Violet franc (très visible)
-  sky1: "#1b1e45", // Zone 1
-  sky2: "#12142e", // Zone 2
-  sky3: "#0a0b1a", // Zone 3
-  sky4: "#04040a", // Zone 4 : Presque noir
-  sky5: "#000000", // Zone 5 : Noir pur (au niveau des toits)
+ // === CIEL — Dégradé Progressif (Teintes Bleu Nuit) ===
+sky0: "#0a2e5c", // Zone 0 : Bleu nuit profond (très visible)
+sky1: "#061d3e", // Zone 1
+sky2: "#031024", // Zone 2
+sky3: "#01060d", // Zone 3
+sky4: "#000306", // Zone 4 : Presque noir
+sky5: "#000000", // Zone 5 : Noir pur (au niveau des toits)
 
   skyFinal: "#000000", // Noir par défaut pour le reste de la scène
 
