@@ -23,17 +23,17 @@ export const NEON = {
 // Biomes
 export const BIOMES = [
   {
-    name: "FORGOTTEN DUNGEON",
-    floorColor: NEON.purple,
-    corridorColor: NEON.pink,
+    name: "UNDER TOWN",
+    floorColor: "#6b624a", // Sable clair (sandBright)
+    corridorColor: NEON.orange,
     floorChars: ["·", "·", "·", "⋅", "∙"],
     levels: [1, 5],
     // Plasma : bleu espace / indigo froid — remplace le rose/rouge par défaut
-    plasmaColor1: "#0055ff",
-    plasmaColor2: "#4400cc",
-    gridColor: "138,0,255", // violet
-    bgFrom: "#0a0015",
-    bgTo: "#1a0035",
+    plasmaColor1: "#302c20", // Sable sombre au fond
+    plasmaColor2: "#002244", // Eau profonde au fond
+    gridColor: "0,119,187", // Lueur de la grille en bleu océan (RGB de #0077bb)
+    bgFrom: "#050a10", // Fond très sombre (abysses)
+    bgTo: "#0f1520",
   },
   {
     name: "FLOODED CAVERNS",
@@ -169,7 +169,7 @@ export const CLASSES = {
   },
 };
 
-// Monsters 
+// Monsters
 export const MONSTERS = [
   {
     char: "r",
@@ -183,7 +183,14 @@ export const MONSTERS = [
   {
     char: "I",
     ai: "ERRATIC",
-    names: ["Imp", "Insect Swarm", "Initiate", "Inkblot Slime", "Ice Mite", "Illusory Sprite"],
+    names: [
+      "Imp",
+      "Insect Swarm",
+      "Initiate",
+      "Inkblot Slime",
+      "Ice Mite",
+      "Illusory Sprite",
+    ],
     hp: 4,
     dmg: 2,
     colors: [NEON.blue, NEON.red, NEON.orange, NEON.magenta],
@@ -201,7 +208,14 @@ export const MONSTERS = [
   {
     char: "G",
     ai: "AMBUSH",
-    names: ["Goblin", "Ghoul", "Gnoll", "Grimlock", "Grease Rat", "Grave Robber"],
+    names: [
+      "Goblin",
+      "Ghoul",
+      "Gnoll",
+      "Grimlock",
+      "Grease Rat",
+      "Grave Robber",
+    ],
     hp: 14,
     dmg: 4,
     colors: [NEON.green, NEON.yellow, NEON.gray, NEON.orange],
@@ -210,7 +224,14 @@ export const MONSTERS = [
   {
     char: "Z",
     ai: "MELEE",
-    names: ["Zombie", "Zealot", "Zombified Orc", "Zealous Cultist", "Zhentarim Thug", "Zombie Lord"],
+    names: [
+      "Zombie",
+      "Zealot",
+      "Zombified Orc",
+      "Zealous Cultist",
+      "Zhentarim Thug",
+      "Zombie Lord",
+    ],
     hp: 18,
     dmg: 5,
     colors: [NEON.green, NEON.cyan, NEON.lime, NEON.purple],
@@ -228,7 +249,14 @@ export const MONSTERS = [
   {
     char: "M",
     ai: "MELEE",
-    names: ["Minotaur", "Manticore", "Mummy", "Mind Flayer", "Mimic", "Marilith"],
+    names: [
+      "Minotaur",
+      "Manticore",
+      "Mummy",
+      "Mind Flayer",
+      "Mimic",
+      "Marilith",
+    ],
     hp: 30,
     dmg: 11,
     colors: [NEON.orange, NEON.red, NEON.yellow, NEON.purple],
@@ -246,7 +274,14 @@ export const MONSTERS = [
   {
     char: "T",
     ai: "JUGGERNAUT",
-    names: ["Troll", "Treant", "Troglodyte", "Thornback", "Tomb Guardian", "Tiefling Warrior"],
+    names: [
+      "Troll",
+      "Treant",
+      "Troglodyte",
+      "Thornback",
+      "Tomb Guardian",
+      "Tiefling Warrior",
+    ],
     hp: 40,
     dmg: 16,
     colors: [NEON.cyan, NEON.green, NEON.lime, NEON.orange],
@@ -255,7 +290,14 @@ export const MONSTERS = [
   {
     char: "F",
     ai: "AMBUSH",
-    names: ["Fiend", "Fomorian", "Fire Elemental", "Flesh Golem", "Flind", "Fell Beast"],
+    names: [
+      "Fiend",
+      "Fomorian",
+      "Fire Elemental",
+      "Flesh Golem",
+      "Flind",
+      "Fell Beast",
+    ],
     hp: 50,
     dmg: 21,
     colors: [NEON.magenta, NEON.red, NEON.purple, NEON.white],
@@ -264,7 +306,14 @@ export const MONSTERS = [
   {
     char: "H",
     ai: "ERRATIC",
-    names: ["Hellhound", "Harpy", "Horror", "Hydra", "Hell Titan", "Hook Horror"],
+    names: [
+      "Hellhound",
+      "Harpy",
+      "Horror",
+      "Hydra",
+      "Hell Titan",
+      "Hook Horror",
+    ],
     hp: 70,
     dmg: 23,
     colors: [NEON.purple, NEON.red, NEON.orange, NEON.magenta],
@@ -273,7 +322,14 @@ export const MONSTERS = [
   {
     char: "V",
     ai: "MELEE",
-    names: ["Vampire", "Vampire Spawn", "Vrock", "Viper Swarm", "Vengeful Spirit", "Voidling"],
+    names: [
+      "Vampire",
+      "Vampire Spawn",
+      "Vrock",
+      "Viper Swarm",
+      "Vengeful Spirit",
+      "Voidling",
+    ],
     hp: 80,
     dmg: 26,
     colors: [NEON.red, NEON.magenta, NEON.purple, NEON.cyan],
@@ -282,7 +338,14 @@ export const MONSTERS = [
   {
     char: "L",
     ai: "RANGED",
-    names: ["Lich", "Lycanthrope", "Leviathan", "Lamia", "Lurker Above", "Lord of Shadows"],
+    names: [
+      "Lich",
+      "Lycanthrope",
+      "Leviathan",
+      "Lamia",
+      "Lurker Above",
+      "Lord of Shadows",
+    ],
     hp: 90,
     dmg: 30,
     colors: [NEON.cyan, NEON.white, NEON.blue, NEON.purple],
@@ -291,7 +354,14 @@ export const MONSTERS = [
   {
     char: "N",
     ai: "RANGED",
-    names: ["Necromancer", "Nosferatu", "Nightmare", "Night Hag", "Naga", "Nalfeshnee"],
+    names: [
+      "Necromancer",
+      "Nosferatu",
+      "Nightmare",
+      "Night Hag",
+      "Naga",
+      "Nalfeshnee",
+    ],
     hp: 90,
     dmg: 34,
     colors: [NEON.purple, NEON.pink, NEON.red, NEON.white],
@@ -300,7 +370,14 @@ export const MONSTERS = [
   {
     char: "P",
     ai: "MELEE",
-    names: ["Pit Fiend", "Paladin Oathbreaker", "Pharaoh's Ghost", "Planetar", "Phase Spider", "Plague Wraith"],
+    names: [
+      "Pit Fiend",
+      "Paladin Oathbreaker",
+      "Pharaoh's Ghost",
+      "Planetar",
+      "Phase Spider",
+      "Plague Wraith",
+    ],
     hp: 110,
     dmg: 37,
     colors: [NEON.cyan, NEON.white, NEON.red, NEON.magenta],
@@ -309,7 +386,14 @@ export const MONSTERS = [
   {
     char: "A",
     ai: "JUGGERNAUT",
-    names: ["Abomination", "Archangel", "Aboleth", "Astral Dreadnought", "Animated Colossus", "Arcane Golem"],
+    names: [
+      "Abomination",
+      "Archangel",
+      "Aboleth",
+      "Astral Dreadnought",
+      "Animated Colossus",
+      "Arcane Golem",
+    ],
     hp: 120,
     dmg: 43,
     colors: [NEON.yellow, NEON.white, NEON.magenta, NEON.cyan],
@@ -318,7 +402,14 @@ export const MONSTERS = [
   {
     char: "X",
     ai: "STALKER",
-    names: ["Xorn", "Xeno-beast", "Xylomancer", "Xerik", "Xorn Elder", "Xenophobic Ooze"],
+    names: [
+      "Xorn",
+      "Xeno-beast",
+      "Xylomancer",
+      "Xerik",
+      "Xorn Elder",
+      "Xenophobic Ooze",
+    ],
     hp: 130,
     dmg: 48,
     colors: [NEON.orange, NEON.yellow, NEON.purple, NEON.red],
@@ -327,7 +418,14 @@ export const MONSTERS = [
   {
     char: "Q",
     ai: "RANGED",
-    names: ["Queen Spider", "Quetzalcoatlus", "Quantum Wraith", "Queen of Blades", "Quickling Lord", "Quester"],
+    names: [
+      "Queen Spider",
+      "Quetzalcoatlus",
+      "Quantum Wraith",
+      "Queen of Blades",
+      "Quickling Lord",
+      "Quester",
+    ],
     hp: 140,
     dmg: 51,
     colors: [NEON.magenta, NEON.purple, NEON.green, NEON.red],
@@ -336,7 +434,14 @@ export const MONSTERS = [
   {
     char: "K",
     ai: "JUGGERNAUT",
-    names: ["Kraken", "Knight of Terror", "Kolyarut", "Kenku Shadowlord", "Kraken Spawn", "King of Doom"],
+    names: [
+      "Kraken",
+      "Knight of Terror",
+      "Kolyarut",
+      "Kenku Shadowlord",
+      "Kraken Spawn",
+      "King of Doom",
+    ],
     hp: 160,
     dmg: 58,
     colors: [NEON.blue, NEON.cyan, NEON.purple, NEON.red],
@@ -345,7 +450,14 @@ export const MONSTERS = [
   {
     char: "D",
     ai: "STALKER",
-    names: ["Dragon", "Demon Lord", "Devourer", "Dracolich", "Death Knight", "Drider"],
+    names: [
+      "Dragon",
+      "Demon Lord",
+      "Devourer",
+      "Dracolich",
+      "Death Knight",
+      "Drider",
+    ],
     hp: 180,
     dmg: 65,
     colors: [NEON.red, NEON.orange, NEON.magenta, NEON.white],
@@ -589,7 +701,13 @@ export const WEAPONS = {
 export const BOWS = [
   // TIER 1: Levels 1-5 (Bonus +0 to +1)
   {
-    names: ["Shortbow", "Light Crossbow", "Hunting Bow", "Simple Wood Bow", "Worn Shortbow"],
+    names: [
+      "Shortbow",
+      "Light Crossbow",
+      "Hunting Bow",
+      "Simple Wood Bow",
+      "Worn Shortbow",
+    ],
     minBonus: 0,
     maxBonus: 1,
     minLevel: 1,
@@ -597,7 +715,13 @@ export const BOWS = [
   },
   // TIER 2: Levels 6-15 (Bonus +1 to +3)
   {
-    names: ["Longbow", "Heavy Crossbow", "Composite Bow", "Yew Longbow", "Ranger's Bow"],
+    names: [
+      "Longbow",
+      "Heavy Crossbow",
+      "Composite Bow",
+      "Yew Longbow",
+      "Ranger's Bow",
+    ],
     minBonus: 1,
     maxBonus: 3,
     minLevel: 6,
@@ -605,7 +729,13 @@ export const BOWS = [
   },
   // TIER 3: Levels 16-30 (Bonus +3 to +6)
   {
-    names: ["Masterwork Longbow", "Elven Shortbow", "Reinforced Crossbow", "Bone-crafted Bow", "Recurve Bow"],
+    names: [
+      "Masterwork Longbow",
+      "Elven Shortbow",
+      "Reinforced Crossbow",
+      "Bone-crafted Bow",
+      "Recurve Bow",
+    ],
     minBonus: 3,
     maxBonus: 6,
     minLevel: 16,
@@ -613,7 +743,13 @@ export const BOWS = [
   },
   // TIER 4: Levels 31-45 (Bonus +6 to +8)
   {
-    names: ["Radiant Bow", "Shadow-strike Bow", "Frost-runed Bow", "Storm Longbow", "Flame-kissed Bow"],
+    names: [
+      "Radiant Bow",
+      "Shadow-strike Bow",
+      "Frost-runed Bow",
+      "Storm Longbow",
+      "Flame-kissed Bow",
+    ],
     minBonus: 6,
     maxBonus: 8,
     minLevel: 31,
@@ -621,7 +757,13 @@ export const BOWS = [
   },
   // TIER 5: Levels 46-50 (Bonus +8 to +10)
   {
-    names: ["Oathbow", "Dragon-bone Longbow", "Celestial Greatbow", "Sylvan Greatbow", "Fiend-slayer Bow"],
+    names: [
+      "Oathbow",
+      "Dragon-bone Longbow",
+      "Celestial Greatbow",
+      "Sylvan Greatbow",
+      "Fiend-slayer Bow",
+    ],
     minBonus: 8,
     maxBonus: 10,
     minLevel: 46,
