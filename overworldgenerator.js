@@ -1,5 +1,5 @@
 // ============================================
-// OVERWORLD GENERATOR — NEO-TOKYO BAY
+// OVERWORLD GENERATOR — NEON BAY
 // Vue rapprochée du front de mer
 // Pour Downwards Overdrive Rogue
 // ============================================
