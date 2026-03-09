@@ -1,30 +1,39 @@
 // ============================================
 // OVERWORLD GENERATOR — NEO-TOKYO BAY
-// Module de génération de carte ville nocturne
+// Vue rapprochée du front de mer
 // Pour Downwards Overdrive Rogue
 // ============================================
 
 // ============================================
-// CONSTANTES DE GRILLE
+// CONSTANTES DE GRILLE (STRICT 50x21)
 // ============================================
-export const GRID_WIDTH = 50;
-export const GRID_HEIGHT = 27; // +2 lignes pour le ciel, mer étendue
+export const GRID_WIDTH = 49; // 0 à 49 = 50 colonnes
+export const GRID_HEIGHT = 20; // 0 à 20 = 21 lignes
 
 // ============================================
 // TYPES DE TUILES
 // ============================================
 export const TILE = {
   VOID: 0,
-  STREET: 1,       // Rue marchable
-  BUILDING: 2,     // Façade d'immeuble (mur)
-  LIT_WINDOW: 3,   // Fenêtre allumée (mur déco)
-  NEON_SIGN: 4,    // Enseigne néon (mur déco)
-  STREETLIGHT: 5,  // Lampadaire (marchable)
-  STAIRS: 6,       // Entrée du donjon / métro
-  WATER: 7,        // Océan (bloquant)
-  PROMENADE: 8,    // Bord de mer (marchable)
-  SKY: 9,          // Ciel nocturne (non-marchable, déco)
-  STAR: 10,        // Étoile scintillante (non-marchable, déco)
+  STREET: 1, // Rue marchable
+  BUILDING: 2, // Façade d'immeuble (mur)
+  LIT_WINDOW: 3, // Fenêtre allumée (mur déco)
+  NEON_SIGN: 4, // Enseigne néon (mur déco)
+  STREETLIGHT: 5, // Lampadaire (marchable)
+  STAIRS: 6, // Entrée du donjon / métro
+  WATER: 7, // Océan (bloquant)
+  PROMENADE: 8, // Bord de mer (marchable)
+  SKY: 9, // Ciel nocturne (non-marchable, déco)
+  STAR: 10, // Étoile scintillante (non-marchable, déco)
+  WALL_DETAIL: 11, // Détail architectural
+  DOOR: 12, // Porte d'immeuble (marchable)
+  RAILING: 13, // Rambarde (bloquant déco)
+  ROOF_EDGE: 14, // Bord de toit
+  PUDDLE: 15, // Flaque (marchable, reflets)
+  AWNING: 16, // Auvent (bloquant déco)
+  VENDING: 17, // Distributeur (bloquant déco)
+  AC_UNIT: 18, // Climatisation (déco mur)
+  SAND: 19, // Sable (marchable)
 };
 
 // Set des tuiles marchables pour collision check rapide
@@ -33,23 +42,32 @@ export const WALKABLE = new Set([
   TILE.STREETLIGHT,
   TILE.STAIRS,
   TILE.PROMENADE,
+  TILE.DOOR,
+  TILE.PUDDLE,
+  TILE.SAND,
 ]);
 
 // ============================================
 // PALETTE SYNTHWAVE
 // ============================================
 export const PALETTE = {
-  // Bâtiments & rues
-  buildingDark: "#0c0a14",
+  // Bâtiments & Rues
+  buildingDark: "#08070d",
   buildingMid: "#12101c",
-  streetDark: "#1a1825",
+  buildingBg: "#0a0a0f", // Fond encore plus sombre pour faire pop les néons
+  plazaDark: "#101016", // Place grise foncée (démarque les immeubles)
+  streetDark: "#1a1825", // Rue standard
   streetMid: "#252333",
-  streetBright: "#3d3a52",   // Nouveau: rue plus visible
+  streetBright: "#3d3a52",
   promenade: "#3a3550",
+  wallDetail: "#1a1828",
+  roofEdge: "#2a2840",
+  puddle: "#2a2845",
 
   // Fenêtres
   windowWarm: "#fff7cc",
   windowCool: "#aae0ff",
+  windowOff: "#0e0c18",
 
   // Néons
   neonCyan: "#00fff9",
@@ -58,22 +76,44 @@ export const PALETTE = {
   neonYellow: "#fff01f",
   neonGreen: "#39ff14",
   neonHotPink: "#ff0055",
+  neonOrange: "#ff6a00",
+
+  // Commerce
+  doorWood: "#3a2a1a",
+  doorFrame: "#555555",
+  vendingGlow: "#00ccaa",
+  vendingBody: "#1a3a3a",
+  awning: "#882244",
+  awningStripe: "#aa3366",
+  railing: "#333344",
+
+  // Sable
+  sandLight: "#4a4535",
+  sandMid: "#3d3828",
+  sandDark: "#302c20",
+  sandWet: "#28261e",
 
   // Eau
   waterDeep: "#002244",
   waterMid: "#005588",
   waterLight: "#0077bb",
   waterHighlight: "#22bbff",
+  waterFoam: "#88ccee",
 
   // Lampadaires
   streetlightGlow: "#fffbe6",
 
-  // Ciel
-  skyDeep: "#05050f",
-  skyMid: "#0a0a1a",
-  starDim: "#555577",
-  starBright: "#eeeeff",
+  // Ciel — dégradé de noir pur à bleu nuit
+  skyTop: "#000000", // Noir pur
+  skyMid: "#040614", // Transition
+  skyLow: "#0b122e", // Bleu nuit vers la ville
+
+  starDim: "#444466",
+  starBright: "#ccccee",
   starWarm: "#ffddaa",
+
+  // Détails
+  acUnit: "#2a2a3a",
 };
 
 export const NEON_COLORS = [
@@ -92,11 +132,8 @@ export const VIVID_NEON_COLORS = new Set([
   PALETTE.neonGreen,
 ]);
 
-// ============================================
-// CONSTANTES DU CIEL
-// ============================================
-export const SKY_ROWS = 2;          // Nombre de lignes de ciel en haut
-export const STAR_DENSITY = 0.08;   // ~8% de chance par tuile ciel
+export const SKY_ROWS = 2;
+export const STAR_DENSITY = 0.08;
 
 // ============================================
 // CARACTÈRES DE RENDU
@@ -108,425 +145,456 @@ export const RENDER_CHARS = {
   window: "▒",
   neon: "█",
   streetlight: "✦",
-  floor: ["·", ":", "·", "·", ":"],       // Rues: plus contrastées avec ":" ajoutés
-  water: ["~", "≈", "∼", "~", "—"],
+  floor: [".", "·", ":"],
+  water: ["~", "≈", "∼", "≈", "~"],
   promenade: ["·", ".", " "],
-  star: "·",                                  // Étoile: point unique, scintillement par opacité
+  star: "·",
 };
+
+// ============================================
+// HAND-CRAFTED MAP TEMPLATE — STRICTEMENT 50x21
+// ============================================
+const MAP_TEMPLATE = [
+  //01234567890123456789012345678901234567890123456789
+  "..................................................", // 0  Ciel noir
+  "...*......*.........*...........*........*........", // 1  Ciel + étoiles
+  ".........┬───────────┬........┬───────────┬.......", // 2  Grands Toits (┬ alignés sur │)
+  ".........│▒░▒▒░▒▒░▒▒░│........│▒▒░▒▒▒░▒▒░▒│.......", // 3  Etage
+  ".........│░▒▒░▒░▒░░▒░│........│░▒▒░▒░▒▒▒░▒│.......", // 4  Etage
+  ".........│▒▒░▒▒▒▒▒░▒▒│........│▒░▒▒░▒░▒░▒░│.......", // 5  Etage
+  "┬───────┬│░▒▒░▒▒░▒▒░▒│┬──────┬│▒▒▒░▒▒▒▒▒░▒│┬─────┬", // 6  Petits Toits
+  "│▌▌▌▌▌▌▌││▌▌▌▌▌▌▌▌▌▌▌││▌▌▌▌▌▌││▌▌▌▌▌▌▌▌▌▌▌││▌▌▌▌▌│", // 7  Bandeau de Néons
+  "│░▒▒░▒▒░││■■■■■■■■■■■││▒░▒░▒░││■■■■■■■■■■■││░▒░▒▒│", // 8  Mur RDC haut
+  "│▒▒░▒▒▒░│└AADAAAA┘AAAD│▒░▒▒░▒│└AADAAAA┘AAAD│▒░▒▒░│", // 9  Auvents & Portes
+  "│▄■░▄▒■▄│::V::::::V:::│▄░▒▄■░│::V::::::V:::│▄░■▄▒│", // 10 Vending sur place
+  "└AADAAAA┘:::▼:::::::::└AADAAA┘:::::::::::::└AADAA┘", // 11 Place grise foncée & Entrée
+  "::✦::::::::::::::~:::✦::::::::::::✦:::~::::::::::✦", // 12 Rue Principale
+  ":::::~::::::::::::::::::::::~~::::::::::::::::::::", // 13 Rue
+  "::::::::::::::::::::::::::::::::::::::::::::::::::", // 14 Rue dégagée (Spawn Joueur)
+  "========__________________________________========", // 15 Rambarde bloquante
+  "==================================================", // 16 Promenade
+  ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,", // 17 Sable sec
+  ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;", // 18 Sable humide
+  "≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈", // 19 Océan (Rivage)
+  "≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈", // 20 Océan profond
+];
+
+// Enseignes néon mises à jour pour les nouvelles coordonnées
+const NEON_SIGNS = [
+  { y: 7, x: 10, len: 11, color: PALETTE.neonHotPink }, // Grand gauche
+  { y: 7, x: 31, len: 11, color: PALETTE.neonCyan }, // Grand droit
+  { y: 7, x: 1, len: 7, color: PALETTE.neonYellow }, // Petit gauche
+  { y: 7, x: 23, len: 6, color: PALETTE.neonPurple }, // Petit milieu
+  { y: 7, x: 44, len: 5, color: PALETTE.neonGreen }, // Petit droite
+];
+
+// ============================================
+// CHAR → TILE MAPPING
+// ============================================
+const CHAR_TO_TILE = {
+  ".": TILE.SKY,
+  "*": TILE.STAR,
+  "█": TILE.BUILDING,
+  "▒": TILE.LIT_WINDOW,
+  "░": TILE.LIT_WINDOW,
+  "─": TILE.ROOF_EDGE,
+  "┬": TILE.ROOF_EDGE,
+  "│": TILE.BUILDING,
+  "└": TILE.BUILDING,
+  "┘": TILE.BUILDING,
+  "▄": TILE.AC_UNIT,
+  "■": TILE.WALL_DETAIL,
+  "▌": TILE.NEON_SIGN,
+  D: TILE.DOOR,
+  A: TILE.AWNING,
+  V: TILE.VENDING,
+  "✦": TILE.STREETLIGHT,
+  ":": TILE.STREET,
+  "~": TILE.PUDDLE,
+  _: TILE.RAILING,
+  "=": TILE.PROMENADE,
+  "≈": TILE.WATER,
+  "▼": TILE.STAIRS,
+  ",": TILE.SAND,
+  ";": TILE.SAND,
+};
+
+let _charMap = null;
 
 // ============================================
 // MOTEUR DE GÉNÉRATION
 // ============================================
 export const generateOverworld = (options = {}) => {
-  const {
-    width = GRID_WIDTH,
-    height = GRID_HEIGHT,
-    coastEnabled = true,
-    baseCoastY = 18,          // Côte remontée pour plus de mer
-    minBlockSize = 4,         // Réduit: immeubles plus petits
-    windowDensity = 0.40,
-    neonDensity = 0.15,
-    streetlightDensity = 0.08,
-    minSpawnDistance = 20,
-    skyRows = SKY_ROWS,
-  } = options;
+  const width = GRID_WIDTH;
+  const height = GRID_HEIGHT;
 
-  // 1. Initialiser la grille
-  const totalHeight = height + 1;
-  const map = Array(totalHeight)
-    .fill(null)
-    .map(() => Array(width + 1).fill(TILE.BUILDING));
+  const map = [];
+  const charMap = [];
+  const starMap = [];
 
-  // 2. Générer le ciel étoilé (lignes 0 à skyRows-1)
-  const starMap = []; // Pour tracker quelles étoiles scintillent
-  for (let y = 0; y <= skyRows; y++) {
+  for (let y = 0; y <= height; y++) {
+    map[y] = [];
+    charMap[y] = [];
+    const line = MAP_TEMPLATE[y] || "";
     for (let x = 0; x <= width; x++) {
-      map[y][x] = TILE.SKY;
+      const ch = line[x] || (y >= 19 ? "≈" : ".");
+      charMap[y][x] = ch;
+      map[y][x] = CHAR_TO_TILE[ch] ?? TILE.SKY;
 
-      // Placer des étoiles aléatoires
-      if (Math.random() < STAR_DENSITY) {
-        map[y][x] = TILE.STAR;
+      if (map[y][x] === TILE.STAR) {
         starMap.push({ x, y, phase: Math.random() * Math.PI * 2 });
       }
     }
   }
 
-  // 3. Ligne côtière sinusoïdale
-  const coastLine = [];
-  if (coastEnabled) {
-    for (let x = 1; x <= width; x++) {
-      coastLine[x] = baseCoastY + Math.round(Math.sin(x / 5) * 1.5);
-    }
-  }
+  _charMap = charMap;
 
-  // 4. Zone ville — commence après le ciel
-  const cityTopY = skyRows + 1;
-  const cityBottomY = coastEnabled ? baseCoastY : height;
-
-  // Skyline irrégulière — certains bâtiments du haut deviennent du ciel
-  const skylineOffset = [];
-  for (let x = 0; x <= width; x++) {
-    skylineOffset[x] = Math.round(
-      Math.sin(x * 0.3) * 1.2 +
-      Math.sin(x * 0.7 + 2) * 0.8 +
-      ((x * 37 + 13) % 3) - 1
-    );
-  }
-
-  // Bordures ville + skyline
-  for (let y = cityTopY; y <= cityBottomY; y++) {
-    for (let x = 1; x <= width; x++) {
-      if (x === 1 || x === width) {
-        map[y][x] = TILE.BUILDING;
-        continue;
-      }
-      const skyLimit = cityTopY + Math.max(0, skylineOffset[x] + 1);
-      if (y < skyLimit) {
-        map[y][x] = Math.random() < STAR_DENSITY * 0.5 ? TILE.STAR : TILE.SKY;
-      }
-    }
-  }
-
-  // 5. BSP — Subdivision récursive pour créer la grille de rues
-  const blocks = [];
-
-  const subdivide = (x, y, w, h) => {
-    if (w < minBlockSize || h < minBlockSize) {
-      blocks.push({ x, y, w, h });
-      return;
-    }
-
-    const splitH =
-      w / h > 1.25 ? false : h / w > 1.25 ? true : Math.random() < 0.5;
-
-    if (splitH) {
-      if (h < minBlockSize * 2) {
-        blocks.push({ x, y, w, h });
-        return;
-      }
-      const splitY = Math.floor(
-        y + minBlockSize + Math.random() * (h - minBlockSize * 2)
-      );
-      for (let sx = x; sx < x + w; sx++) map[splitY][sx] = TILE.STREET;
-      subdivide(x, y, w, splitY - y);
-      subdivide(x, splitY + 1, w, h - (splitY - y + 1));
-    } else {
-      if (w < minBlockSize * 2) {
-        blocks.push({ x, y, w, h });
-        return;
-      }
-      const splitX = Math.floor(
-        x + minBlockSize + Math.random() * (w - minBlockSize * 2)
-      );
-      for (let sy = y; sy < y + h; sy++) map[sy][splitX] = TILE.STREET;
-      subdivide(x, y, splitX - x, h);
-      subdivide(splitX + 1, y, w - (splitX - x + 1), h);
-    }
-  };
-
-  subdivide(2, cityTopY + 1, width - 2, cityBottomY - cityTopY - 2);
-
-  // 6. Décoration des blocs — fenêtres & néons
-  for (const block of blocks) {
-    for (let by = block.y; by < block.y + block.h; by++) {
-      for (let bx = block.x; bx < block.x + block.w; bx++) {
-        if (by >= map.length || bx >= map[0].length) continue;
-        if (map[by][bx] !== TILE.BUILDING) continue;
-
-        if (Math.random() < windowDensity) {
-          map[by][bx] = TILE.LIT_WINDOW;
-        }
-
-        const touchesStreet =
-          (bx > 1 && map[by][bx - 1] === TILE.STREET) ||
-          (bx < width && map[by][bx + 1] === TILE.STREET) ||
-          (by > 1 && map[by - 1]?.[bx] === TILE.STREET) ||
-          (by < height && map[by + 1]?.[bx] === TILE.STREET);
-
-        if (touchesStreet && Math.random() < neonDensity) {
-          map[by][bx] = TILE.NEON_SIGN;
-        }
-      }
-    }
-  }
-
-  // 7. Lampadaires sur les rues
-  for (let y = cityTopY; y < cityBottomY; y++) {
-    for (let x = 2; x < width; x++) {
-      if (map[y][x] !== TILE.STREET) continue;
-
-      const touchesBuilding =
-        (map[y + 1]?.[x] != null && map[y + 1][x] !== TILE.STREET && map[y + 1][x] !== TILE.VOID) ||
-        (map[y - 1]?.[x] != null && map[y - 1][x] !== TILE.STREET && map[y - 1][x] !== TILE.VOID) ||
-        (map[y][x + 1] != null && map[y][x + 1] !== TILE.STREET && map[y][x + 1] !== TILE.VOID) ||
-        (map[y][x - 1] != null && map[y][x - 1] !== TILE.STREET && map[y][x - 1] !== TILE.VOID);
-
-      if (touchesBuilding && Math.random() < streetlightDensity) {
-        map[y][x] = TILE.STREETLIGHT;
-      }
-    }
-  }
-
-  // 8. Zone côtière — promenade + océan
-  if (coastEnabled) {
-    for (let y = baseCoastY - 1; y <= height; y++) {
-      for (let x = 1; x <= width; x++) {
-        map[y][x] = y >= coastLine[x] ? TILE.WATER : TILE.PROMENADE;
-      }
-    }
-  }
-
-  // 9. Placement du joueur et de la sortie
-  const getRandomTile = (tileTypes, regionMinY, regionMaxY) => {
-    for (let i = 0; i < 2000; i++) {
-      const rx = Math.floor(Math.random() * (width - 2)) + 2;
-      const ry = Math.floor(Math.random() * (regionMaxY - regionMinY)) + regionMinY;
-      if (ry < map.length && tileTypes.includes(map[ry]?.[rx])) return { x: rx, y: ry };
-    }
-    return { x: Math.floor(width / 2), y: Math.floor(regionMaxY / 2) };
-  };
-
-  const getValidPromenade = () => {
-    if (!coastEnabled) return getRandomTile([TILE.STREET], cityTopY, cityBottomY - 1);
-    for (let x = Math.floor(width / 2); x < width; x++) {
-      const y = coastLine[x] - 1;
-      if (map[y]?.[x] === TILE.PROMENADE) return { x, y };
-    }
-    return { x: Math.floor(width / 2), y: baseCoastY - 1 };
-  };
-
-  const playerPos = getValidPromenade();
-  let stairsPos = getRandomTile([TILE.STREET, TILE.STREETLIGHT], cityTopY, cityBottomY - 1);
-
-  while (
-    Math.abs(playerPos.x - stairsPos.x) + Math.abs(playerPos.y - stairsPos.y) <
-    minSpawnDistance
-  ) {
-    stairsPos = getRandomTile([TILE.STREET, TILE.STREETLIGHT], cityTopY, cityBottomY - 1);
-  }
+  const stairsPos = { x: 12, y: 11 };
   map[stairsPos.y][stairsPos.x] = TILE.STAIRS;
+
+  const playerPos = { x: 25, y: 14 };
+
+  const coastLine = [];
+  for (let x = 0; x <= width; x++) {
+    coastLine[x] = 19; // Le rivage est à la ligne 19
+  }
 
   return {
     map,
     playerPos,
     stairsPos,
     coastLine,
-    blocks,
+    blocks: [],
     starMap,
     width,
     height,
-    skyRows,
+    skyRows: SKY_ROWS,
   };
 };
 
 // ============================================
 // UTILITAIRES
 // ============================================
-
-/** Vérifie si une position est marchable */
 export const isWalkable = (map, x, y) => {
-  if (y < 1 || y >= map.length || x < 1 || x >= map[0].length) return false;
+  if (y < 0 || y >= map.length || x < 0 || x >= (map[0]?.length || 0))
+    return false;
   return WALKABLE.has(map[y][x]);
 };
 
-/** Retourne la couleur néon d'une tuile NEON_SIGN selon sa position */
 export const getNeonColor = (x, y) => {
-  return NEON_COLORS[(x * y) % NEON_COLORS.length];
+  return NEON_COLORS[(x * 7 + y * 13) % NEON_COLORS.length];
 };
 
-/** Vérifie si une tuile de rue est adjacente à un néon (pour reflets sol mouillé) */
+const findSignColor = (x, y) => {
+  for (const s of NEON_SIGNS) {
+    if (y === s.y && x >= s.x && x < s.x + s.len) return s.color;
+  }
+  return getNeonColor(x, y);
+};
+
 export const getAdjacentNeonColor = (map, x, y) => {
-  const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+  const dirs = [
+    [-1, 0],
+    [1, 0],
+    [0, -1],
+    [0, 1],
+  ];
   for (const [dx, dy] of dirs) {
     const nx = x + dx;
     const ny = y + dy;
     if (map[ny]?.[nx] === TILE.NEON_SIGN) {
-      return getNeonColor(nx, ny);
+      return findSignColor(nx, ny);
     }
   }
   return null;
 };
 
-/** Retourne le caractère et la couleur de rendu pour une tuile donnée */
-export const getTileRender = (map, x, y, tick = 0, coastLine = [], starMap = []) => {
+const skyBgForRow = (y) => {
+  if (y === 0) return PALETTE.skyTop; // Noir pur
+  if (y === 1) return PALETTE.skyMid; // Noir bleuté
+  if (y <= 3) return PALETTE.skyLow; // Bleu nuit
+  return PALETTE.skyLow;
+};
+
+// ============================================
+// RENDU
+// ============================================
+export const getTileRender = (
+  map,
+  x,
+  y,
+  tick = 0,
+  coastLine = [],
+  starMap = []
+) => {
   const tile = map[y]?.[x];
+  const ch = _charMap?.[y]?.[x] || " ";
   if (tile == null) return { char: " ", color: "#000" };
 
   switch (tile) {
-    // ── CIEL ──────────────────────────────────
+    // ── CIEL ──────────────
     case TILE.SKY: {
-      return {
-        char: " ",
-        color: PALETTE.skyDeep,
-        bg: PALETTE.skyDeep,
-      };
+      const bg = skyBgForRow(y);
+      return { char: " ", color: bg, bg };
     }
     case TILE.STAR: {
-      // Scintillement doux — onde sinusoïdale lente, variation de luminosité uniquement
-      const wave = (Math.sin(tick * 0.08 + x * 2.7 + y * 4.1) + 1) / 2; // 0..1
-      const op = 0.2 + wave * 0.8; // oscille entre 0.2 et 1.0
-      const c = wave > 0.85 ? PALETTE.starWarm
-              : wave > 0.4  ? PALETTE.starBright
-              : PALETTE.starDim;
-
+      const wave = (Math.sin(tick * 0.08 + x * 2.7 + y * 4.1) + 1) / 2;
+      const op = 0.2 + wave * 0.8;
+      const c =
+        wave > 0.85
+          ? PALETTE.starWarm
+          : wave > 0.4
+          ? PALETTE.starBright
+          : PALETTE.starDim;
+      const bg = skyBgForRow(y);
       return {
         char: "·",
         color: c,
-        bg: PALETTE.skyDeep,
+        bg,
         opacity: op,
         glow: wave > 0.85 ? `0 0 3px ${PALETTE.starWarm}60` : null,
       };
     }
 
-    // ── RUES (plus visibles) ──────────────────
-    case TILE.STREET: {
-      const ci = (x * 13 + y * 7) % RENDER_CHARS.floor.length;
-      const reflectColor = getAdjacentNeonColor(map, x, y);
+    // ── STRUCTURE ───────────
+    case TILE.BUILDING: {
+      if ("│└┘".includes(ch)) {
+        return { char: ch, color: PALETTE.wallDetail, bg: PALETTE.buildingBg };
+      }
       return {
-        char: reflectColor ? "·" : RENDER_CHARS.floor[ci],
-        color: reflectColor || PALETTE.streetBright,    // Plus lumineux
-        bg: PALETTE.streetDark,                          // Fond distinct
-        opacity: reflectColor ? 0.35 : 0.7,             // Plus opaque
-        glow: reflectColor ? `0 0 6px ${reflectColor}60` : null,
+        char: "█",
+        color: PALETTE.buildingDark,
+        bg: PALETTE.buildingDark,
       };
     }
-    case TILE.BUILDING: {
-      const heightRatio = y / 20;
-      // Les buildings proches du ciel sont plus sombres pour fondre avec la nuit
-      const skyProximity = Math.max(0, 1 - (y - SKY_ROWS) / 3);
-      const r = Math.floor((12 + heightRatio * 8) * (1 - skyProximity * 0.6));
-      const g = Math.floor((10 + heightRatio * 6) * (1 - skyProximity * 0.6));
-      const b = Math.floor((20 + heightRatio * 12) * (1 - skyProximity * 0.7));
-      const c = `rgb(${r},${g},${b})`;
-      return { char: "█", color: c, bg: c };
+    case TILE.ROOF_EDGE: {
+      const bg = y <= 6 ? skyBgForRow(y) : PALETTE.buildingBg;
+      return { char: ch, color: PALETTE.roofEdge, bg };
     }
+    case TILE.WALL_DETAIL: {
+      return { char: "▪", color: PALETTE.wallDetail, bg: PALETTE.buildingBg };
+    }
+    case TILE.AC_UNIT: {
+      return { char: "▄", color: PALETTE.acUnit, bg: PALETTE.buildingBg };
+    }
+
+    // ── FENÊTRES ──────────────────────────────
     case TILE.LIT_WINDOW: {
-      const warm = (x * 3 + y * 7) % 5 !== 0;
-      const c = warm ? PALETTE.windowWarm : PALETTE.windowCool;
+      const cool = ch === "░" || (x * 3 + y * 7) % 5 === 0;
+      const c = cool ? PALETTE.windowCool : PALETTE.windowWarm;
       const hash = (x * 131 + y * 97) % 100;
 
-      // Groupe A (hash 0-14): cycle lent avec fondu doux
-      if (hash < 15) {
+      if (hash < 12) {
         const cycle = Math.sin(tick * 0.02 + hash * 0.7);
-        if (cycle < -0.3) {
-          const heightRatio = y / 20;
-          const r = Math.floor(12 + heightRatio * 8);
-          const g = Math.floor(10 + heightRatio * 6);
-          const b = Math.floor(20 + heightRatio * 12);
-          const bc = `rgb(${r},${g},${b})`;
-          return { char: "█", color: bc, bg: bc };
-        }
+        if (cycle < -0.3)
+          return {
+            char: "▒",
+            color: PALETTE.windowOff,
+            bg: PALETTE.buildingBg,
+            opacity: 0.3,
+          };
         if (cycle < 0.2) {
           const fade = (cycle + 0.3) / 0.5;
           return {
             char: "▒",
             color: c,
+            bg: PALETTE.buildingBg,
             opacity: 0.3 + fade * 0.7,
-            glow: `0 0 ${Math.floor(fade * 6)}px ${c}${Math.floor(fade * 9)}0`,
+            glow: `0 0 ${Math.floor(fade * 4)}px ${c}${Math.floor(fade * 6)}0`,
             animClass: `window-${(x + y) % 4}`,
           };
         }
       }
 
-      // Groupe B (hash 15-21): on/off instantané — quelqu'un allume ou éteint
-      // Cycle très lent avec seuil net (pas de fondu)
-      if (hash >= 15 && hash < 22) {
+      if (hash >= 12 && hash < 17) {
         const snap = Math.sin(tick * 0.012 + hash * 1.1);
-        if (snap < -0.2) {
-          const heightRatio = y / 20;
-          const r = Math.floor(12 + heightRatio * 8);
-          const g = Math.floor(10 + heightRatio * 6);
-          const b = Math.floor(20 + heightRatio * 12);
-          const bc = `rgb(${r},${g},${b})`;
-          return { char: "█", color: bc, bg: bc };
-        }
+        if (snap < -0.2)
+          return {
+            char: "▒",
+            color: PALETTE.windowOff,
+            bg: PALETTE.buildingBg,
+            opacity: 0.3,
+          };
       }
 
       return {
         char: "▒",
         color: c,
-        glow: `0 0 6px ${c}90, 0 0 12px ${c}40`,
+        bg: PALETTE.buildingBg,
+        glow: `0 0 4px ${c}70, 0 0 10px ${c}25`,
         animClass: `window-${(x + y) % 4}`,
       };
     }
+
+    // ── NÉONS ─────────────────────────────────
     case TILE.NEON_SIGN: {
-      const c = getNeonColor(x, y);
-      // ~8% des néons ont un flicker subtil
+      const c = findSignColor(x, y);
       const nHash = (x * 73 + y * 53) % 100;
-      if (nHash < 8) {
+      if (nHash < 6) {
         const flick = Math.sin(tick * 0.04 + nHash * 1.3);
-        if (flick < -0.5) {
+        if (flick < -0.5)
           return {
             char: "█",
             color: c,
-            opacity: 0.3,
-            glow: `0 0 4px ${c}40`,
+            bg: PALETTE.buildingBg,
+            opacity: 0.25,
+            glow: `0 0 3px ${c}30`,
             bold: true,
-            animClass: `neon-${(x + y) % 5}`,
           };
-        }
       }
       return {
         char: "█",
         color: c,
-        glow: `0 0 10px ${c}, 0 0 25px ${c}90, 0 0 45px ${c}40`,
+        bg: PALETTE.buildingBg,
+        glow: `0 0 8px ${c}, 0 0 20px ${c}80, 0 0 40px ${c}30`,
         bold: true,
-        animClass: `neon-${(x + y) % 5}`,
       };
     }
-    case TILE.STREETLIGHT: {
+
+    // ── COMMERCE ──────────────────────────────
+    case TILE.DOOR:
+      return { char: "▌", color: PALETTE.doorWood, bg: PALETTE.doorFrame };
+    case TILE.AWNING:
+      return {
+        char: "▀",
+        color: x % 2 === 0 ? PALETTE.awning : PALETTE.awningStripe,
+        bg: PALETTE.buildingBg,
+      };
+    case TILE.VENDING: {
+      const pulse = (Math.sin(tick * 0.05 + x) + 1) / 2;
+      return {
+        char: "▐",
+        color: PALETTE.vendingGlow,
+        bg: PALETTE.vendingBody,
+        opacity: 0.7 + pulse * 0.3,
+        glow: `0 0 6px ${PALETTE.vendingGlow}60`,
+        bold: true,
+      };
+    }
+
+    // ── RUES ET PLACES ──────────────────────────
+    case TILE.STREET: {
+      const ci = (x * 13 + y * 7) % RENDER_CHARS.floor.length;
+      const reflectColor = getAdjacentNeonColor(map, x, y);
+      const isPlaza = y <= 11; // La place grise foncée pour démarquer les bâtiments
+      const bg = isPlaza ? PALETTE.plazaDark : PALETTE.streetDark;
+
+      return {
+        char: reflectColor ? "·" : RENDER_CHARS.floor[ci],
+        color: reflectColor || PALETTE.streetBright,
+        bg,
+        opacity: reflectColor ? 0.4 : 0.6,
+        glow: reflectColor ? `0 0 6px ${reflectColor}50` : null,
+      };
+    }
+    case TILE.PUDDLE: {
+      const reflectColor = getAdjacentNeonColor(map, x, y);
+      const p = Math.sin(tick * 0.1 + x * 1.5);
+      return {
+        char: "~",
+        color: reflectColor || PALETTE.puddle,
+        bg: PALETTE.streetDark,
+        opacity: reflectColor ? 0.3 + p * 0.15 : 0.4,
+        glow: reflectColor ? `0 0 5px ${reflectColor}40` : null,
+      };
+    }
+    case TILE.STREETLIGHT:
       return {
         char: "✦",
         color: PALETTE.streetlightGlow,
-        glow: `0 0 8px ${PALETTE.streetlightGlow}, 0 0 20px ${PALETTE.streetlightGlow}a0`,
+        bg: PALETTE.streetDark,
+        glow: `0 0 8px ${PALETTE.streetlightGlow}, 0 0 20px ${PALETTE.streetlightGlow}80`,
         bold: true,
-        animClass: "streetlight",
+      };
+
+    // ── PROMENADE & RAILING ──────────────────
+    case TILE.RAILING:
+      return { char: "═", color: PALETTE.railing, bg: PALETTE.streetDark };
+    case TILE.PROMENADE:
+      return {
+        char: RENDER_CHARS.promenade[(x + y) % RENDER_CHARS.promenade.length],
+        color: PALETTE.promenade,
+        opacity: 0.6,
+      };
+
+    // ── SABLE ─────────────────────────────────
+    case TILE.SAND: {
+      const wet = ch === ";";
+      const si = (x * 17 + y * 11) % 5;
+      const sandChar = wet
+        ? ["·", "·", ".", ".", "·"][si]
+        : ["·", ".", ":", ".", "·"][si];
+      const c = wet
+        ? PALETTE.sandWet
+        : (x + y) % 3 === 0
+        ? PALETTE.sandLight
+        : PALETTE.sandMid;
+      return {
+        char: sandChar,
+        color: c,
+        bg: wet ? PALETTE.sandDark : PALETTE.sandMid,
+        opacity: wet ? 0.5 : 0.6,
       };
     }
+
+    // ── EAU (Va-et-vient respirant) ───────────
     case TILE.WATER: {
-      const phase = (tick + x * 3 + y * 7) % RENDER_CHARS.water.length;
-      const distFromShore = y - (coastLine[x] || 18);
-      let c = distFromShore <= 0 ? PALETTE.waterHighlight
-            : distFromShore === 1 ? PALETTE.waterLight
-            : PALETTE.waterMid;
-      let opacity = distFromShore <= 0 ? 0.85 : distFromShore === 1 ? 0.75 : 0.65;
+      // Onde sinusoïdale locale pour créer la "respiration" de la houle
+      const wavePhase = Math.sin(tick * 0.08 + x * 0.15 + y * 0.3);
+      const waveOffset = Math.floor((wavePhase + 1) * 2); // 0 à 4
+      const charIdx = Math.max(0, Math.min(4, waveOffset));
+
+      const distFromShore = y - (coastLine[x] || 19);
+      let c =
+        distFromShore <= 0
+          ? PALETTE.waterHighlight
+          : distFromShore === 1
+          ? PALETTE.waterLight
+          : distFromShore <= 3
+          ? PALETTE.waterMid
+          : PALETTE.waterDeep;
+      let opacity = distFromShore <= 0 ? 0.85 : distFromShore <= 2 ? 0.75 : 0.6;
       let glow = null;
 
-      // Reflets sur l'eau — uniquement couleurs vives (néons)
-      const shoreY = coastLine[x] || 20;
-      for (let scan = 1; scan <= 5; scan++) {
+      // Reflets néons étendus sur l'eau (scan plus long car néons plus hauts)
+      const shoreY = coastLine[x] || 19;
+      for (let scan = 1; scan <= 12; scan++) {
         const sy = shoreY - scan;
         if (sy < 0) break;
         const t = map[sy]?.[x];
         if (t === TILE.NEON_SIGN) {
-          const nc = getNeonColor(x, sy);
+          const nc = findSignColor(x, sy);
           if (VIVID_NEON_COLORS.has(nc)) {
             c = nc;
-            opacity = Math.max(0.15, 0.55 - distFromShore * 0.06 - scan * 0.04);
-            glow = `0 0 6px ${nc}50`;
+            opacity = Math.max(0.12, 0.5 - distFromShore * 0.05 - scan * 0.02);
+            glow = `0 0 5px ${nc}40`;
           }
           break;
         }
-        if (t === TILE.LIT_WINDOW || t === TILE.STREETLIGHT) break;
+        if (
+          t === TILE.LIT_WINDOW ||
+          t === TILE.STREETLIGHT ||
+          t === TILE.VENDING
+        )
+          break;
+      }
+
+      if (distFromShore === 0 && Math.sin(tick * 0.15 + x * 0.4) > 0.3) {
+        c = PALETTE.waterFoam;
+        opacity = 0.6;
       }
 
       return {
-        char: RENDER_CHARS.water[phase],
+        char: RENDER_CHARS.water[charIdx],
         color: c,
         opacity,
         glow,
         animClass: `wave-${(x + y) % 3}`,
       };
     }
-    case TILE.PROMENADE: {
-      const ci = (x + y) % RENDER_CHARS.promenade.length;
-      return {
-        char: RENDER_CHARS.promenade[ci],
-        color: PALETTE.promenade,
-        opacity: 0.6,
-      };
-    }
-    case TILE.STAIRS: {
+
+    // ── ENTRÉE DONJON ─────────────────────────
+    case TILE.STAIRS:
       return {
         char: "▼",
         color: PALETTE.neonMagenta,
@@ -534,8 +602,9 @@ export const getTileRender = (map, x, y, tick = 0, coastLine = [], starMap = [])
         bold: true,
         animClass: "stairs-pulse",
       };
-    }
+
     default:
       return { char: " ", color: "#000" };
+      8;
   }
 };
