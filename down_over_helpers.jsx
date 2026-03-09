@@ -13,7 +13,7 @@ export const GRID_HEIGHT = 21;
 export const PROLOGUE_LINES = [
   "PROLOGUE",
   "",
-  "Bettie was no ordinary girl. In that humid summer of the 80s, while the youth of the Riviera consumed themselves under the strobe lights of nightclubs, she preferred the hypnotic glow of her bedroom. She was a beautiful anomaly, a pioneer of the shadows: a gamer.",
+  "Bettie was no ordinary girl. In that summer of the 80s, while the youth of the Riviera consumed themselves under the strobe lights of nightclubs, she preferred the hypnotic glow of her bedroom. She was a beautiful anomaly, a pioneer of the shadows: a gamer.",
   "",
   "Around her, the CRT screens of her ZX Spectrum and her trusty Amstrad CPC crackled softly in the dim light. She loved spending her nights like this, the window wide open to the seaside. Lulled by the surf of the waves and the mechanical clatter of her keyboard, she would let demos from the pirate scene run or delve deep into the corridors of her favorite exploration games.",
   "",
