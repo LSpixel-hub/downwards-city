@@ -5454,9 +5454,11 @@ function DownwardsNeon() {
 
         // Joueur
         if (player.x === realX && player.y === realY) {
+          const underPlayer = baseRow?.[x];
           row.push({
             char: "@",
             color: classColor,
+            bg: isOverworld && underPlayer?.bg ? underPlayer.bg : undefined,
             glow: classGlow,
             animation: "glow 1s ease-in-out infinite",
           });
