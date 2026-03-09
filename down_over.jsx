@@ -5458,7 +5458,7 @@ function DownwardsNeon() {
           row.push({
             char: "@",
             color: classColor,
-            bg: isOverworld && underPlayer?.bg ? underPlayer.bg : undefined,
+            bg: level === 0 && underPlayer?.bg ? underPlayer.bg : undefined,
             glow: classGlow,
             animation: "glow 1s ease-in-out infinite",
           });
