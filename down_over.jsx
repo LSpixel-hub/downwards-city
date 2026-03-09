@@ -4959,6 +4959,56 @@ function DownwardsNeon() {
           @keyframes borderGlow { 0%, 100% { box-shadow: 0 0 5px ${NEON.pink}, 0 0 10px ${NEON.pink}, 0 0 20px ${NEON.pink}; } 50% { box-shadow: 0 0 10px ${NEON.cyan}, 0 0 20px ${NEON.cyan}, 0 0 40px ${NEON.cyan}; } }
           @keyframes voidDanger { 0%, 100% { color: ${NEON.yellow}; text-shadow: 0 0 5px ${NEON.yellow}; } 50% { color: ${NEON.red}; text-shadow: 0 0 10px ${NEON.red}, 0 0 20px ${NEON.red}; } }
           @keyframes effectPop { 0% { opacity: 0; transform: scale(0.5); } 30% { opacity: 1; transform: scale(1.4); } 100% { opacity: 1; transform: scale(1); } }
+
+          @keyframes crtPowerOff {
+            0%, 75% {
+              transform: scale(1, 1);
+              opacity: 1;
+              filter: contrast(1) brightness(1);
+            }
+            85% {
+              transform: scale(1, 0.02);
+              opacity: 1;
+              filter: contrast(2) brightness(3);
+            }
+            95% {
+              transform: scale(0, 0.02);
+              opacity: 0.8;
+            }
+            100% {
+              transform: scale(0, 0);
+              opacity: 0;
+            }
+          }
+
+          @keyframes pixelGlitchExit {
+            0%, 75% {
+              opacity: 1;
+              clip-path: inset(0 0 0 0);
+              transform: translate(0);
+            }
+            78% {
+              clip-path: inset(20% 0 60% 0);
+              transform: translate(-10px, 5px);
+              filter: hue-rotate(90deg);
+            }
+            81% {
+              clip-path: inset(60% 0 10% 0);
+              transform: translate(10px, -5px);
+              filter: hue-rotate(-90deg);
+            }
+            84% {
+              clip-path: inset(10% 0 80% 0);
+              transform: translate(-5px, 10px);
+            }
+            87% {
+              opacity: 0;
+              transform: scale(1.1);
+            }
+            100% {
+              opacity: 0;
+            }
+          }
           
           * { box-sizing: border-box; }
           
@@ -5455,9 +5505,16 @@ function DownwardsNeon() {
             alignItems: "center",
             justifyContent: "center",
             zIndex: 100,
+            animation:
+              "crtPowerOff 1.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards",
           }}
         >
-          <div style={{ textAlign: "center" }}>
+          <div
+            style={{
+              textAlign: "center",
+              animation: "pixelGlitchExit 1.5s steps(2, end) forwards",
+            }}
+          >
             <div
               style={{
                 fontFamily: "Orbitron, sans-serif",
