@@ -170,11 +170,11 @@ const MAP_TEMPLATE = [
   "│░▒▒░▒▒░││■■■■■■■■■■■││▒░▒░▒░││■■■■■■■■■■■││░▒░▒▒│", // 8  Mur
   "│▒▒░▒▒▒░││▒▒░▒▒░▒▒░▒▒││▒░▒▒░▒││▒▒░▒▒░▒▒░▒▒││▒░▒▒░│", // 9  Mur (suite)
   "│▄■░▄▒■▄│└AADAADAADAA┘│▄░▒▄■░│└AADAADAADAA┘│▄░■▄▒│", // 10 Auvents/Portes (Grands immeubles)
-  "└AADAAAD┘::::V::::V:::└AADAAA┘::::V::::V:::└AADAA┘", // 11 Auvents/Portes (Petits immeubles) & Trottoir
+  "└AADAAAD┘::::V:::::V::└AADAAA┘::::V:::::V::└AADAA┘", // 11 Auvents/Portes (Petits immeubles) & Trottoir
  "::✦::::::::::::::~:::✦::::::::::::✦:::~::::::::::✦", // 12 Rue Principale
   ":::::~::::::::::::::::::::::~~::::::::::::::::::::", // 13 Rue
   "::::::::::::::::::::::::::::::::::::::::::::::::::", // 14 Rue dégagée (Spawn Joueur)
-  "::::::::__________________________________::::::::", // 15 Rambarde bloquante + rue dégagée sur les bords
+  "::::::::✦________________________________✦::::::::", // 15 Rambarde bloquante + rue dégagée sur les bords
   ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,", // 16 Sable sec
   ",,;;;;;,,,,,,,,;;;;;,,,,,,,,;;;;;,,,,,,,,;;;;;,,,,", // 17 Sable dynamique
   ";;;≈≈≈;;;;;;;;;;≈≈≈;;;;;;;;;;≈≈≈;;;;;;;;;;≈≈≈;;;;;", // 18 Océan (rivage)
