@@ -636,11 +636,12 @@ const PlasmaBackground = React.memo(({ biome }) => {
 // ============================================
 const GridCell = React.memo(
   ({ cellData }) => {
-    const { char, color, glow, animation } = cellData;
+    const { char, color, bg, glow, animation } = cellData;
     return (
       <span
         style={{
           color,
+          backgroundColor: bg || undefined,
           textShadow: glow,
           textAlign: "center",
           display: animation ? "inline-block" : undefined,
@@ -657,6 +658,7 @@ const GridCell = React.memo(
     return (
       a.char === b.char &&
       a.color === b.color &&
+      a.bg === b.bg &&
       a.glow === b.glow &&
       a.animation === b.animation
     );
@@ -5372,6 +5374,7 @@ function DownwardsNeon() {
           row.push({
             char: rendered.char,
             color: isStairs ? "#ffffff" : rendered.color,
+            bg: rendered.bg || null,
             glow: isStairs ? glowStyle("#ffffff") : (rendered.glow || "none"),
             animation: isStairs
               ? "flash 0.7s ease-in-out infinite"
