@@ -22,7 +22,6 @@ export const TILE = {
   STREETLIGHT: 5, // Lampadaire (marchable)
   STAIRS: 6, // Entrée du donjon / métro
   WATER: 7, // Océan (bloquant)
-  PROMENADE: 8, // Bord de mer (marchable)
   SKY: 9, // Ciel nocturne (non-marchable, déco)
   STAR: 10, // Étoile scintillante (non-marchable, déco)
   WALL_DETAIL: 11, // Détail architectural
@@ -41,7 +40,6 @@ export const WALKABLE = new Set([
   TILE.STREET,
   TILE.STREETLIGHT,
   TILE.STAIRS,
-  TILE.PROMENADE,
   TILE.DOOR,
   TILE.PUDDLE,
   TILE.SAND,
@@ -51,17 +49,16 @@ export const WALKABLE = new Set([
 // PALETTE SYNTHWAVE
 // ============================================
 export const PALETTE = {
-  // Bâtiments & Rues
-  buildingDark: "#08070d",
+  // Bâtiments & Rues (Harmonisé en gris)
+  buildingDark: "#777777", // Gris moyen unifié pour murs
   buildingMid: "#12101c",
-  buildingBg: "#0a0a0f", // Fond encore plus sombre pour faire pop les néons
+  buildingBg: "#0a0a0f", // Fond sombre pour faire pop les néons
   plazaDark: "#101016", // Place grise foncée (démarque les immeubles)
   streetDark: "#1a1825", // Rue standard
   streetMid: "#252333",
   streetBright: "#3d3a52",
-  promenade: "#3a3550",
-  wallDetail: "#1a1828",
-  roofEdge: "#2a2840",
+  wallDetail: "#777777", // Gris moyen unifié pour détails
+  roofEdge: "#777777", // Gris moyen unifié pour toiture
   puddle: "#2a2845",
 
   // Fenêtres
@@ -83,11 +80,12 @@ export const PALETTE = {
   doorFrame: "#555555",
   vendingGlow: "#00ccaa",
   vendingBody: "#1a3a3a",
-  awning: "#882244",
-  awningStripe: "#aa3366",
+  awning: "#777777", // Gris moyen unifié pour auvent
+  awningStripe: "#882244", // Couleur secondaire pour auvent
   railing: "#333344",
 
   // Sable
+  sandBright: "#6b624a", // Sable clair pour la lisière de l'eau
   sandLight: "#4a4535",
   sandMid: "#3d3828",
   sandDark: "#302c20",
@@ -103,10 +101,15 @@ export const PALETTE = {
   // Lampadaires
   streetlightGlow: "#fffbe6",
 
-  // Ciel — dégradé de noir pur à bleu nuit
-  skyTop: "#000000", // Noir pur
-  skyMid: "#040614", // Transition
-  skyLow: "#0b122e", // Bleu nuit vers la ville
+  // === CIEL — Dégradé Progressif (Teintes volontairement poussées) ===
+  sky0: "#252b61", // Zone 0 : Bleu/Violet franc (très visible)
+  sky1: "#1b1e45", // Zone 1
+  sky2: "#12142e", // Zone 2
+  sky3: "#0a0b1a", // Zone 3
+  sky4: "#04040a", // Zone 4 : Presque noir
+  sky5: "#000000", // Zone 5 : Noir pur (au niveau des toits)
+
+  skyFinal: "#000000", // Noir par défaut pour le reste de la scène
 
   starDim: "#444466",
   starBright: "#ccccee",
@@ -132,7 +135,7 @@ export const VIVID_NEON_COLORS = new Set([
   PALETTE.neonGreen,
 ]);
 
-export const SKY_ROWS = 2;
+export const SKY_ROWS = 6; // Zone d'apparition des étoiles et du dégradé
 export const STAR_DENSITY = 0.08;
 
 // ============================================
@@ -147,39 +150,39 @@ export const RENDER_CHARS = {
   streetlight: "✦",
   floor: [".", "·", ":"],
   water: ["~", "≈", "∼", "≈", "~"],
-  promenade: ["·", ".", " "],
   star: "·",
 };
 
 // ============================================
 // HAND-CRAFTED MAP TEMPLATE — STRICTEMENT 50x21
+// Rambardes nettoyées sur les côtés (ligne 15 remplacée par des ':')
 // ============================================
 const MAP_TEMPLATE = [
   //01234567890123456789012345678901234567890123456789
-  "..................................................", // 0  Ciel noir
-  "...*......*.........*...........*........*........", // 1  Ciel + étoiles
-  ".........┬───────────┬........┬───────────┬.......", // 2  Grands Toits (┬ alignés sur │)
-  ".........│▒░▒▒░▒▒░▒▒░│........│▒▒░▒▒▒░▒▒░▒│.......", // 3  Etage
-  ".........│░▒▒░▒░▒░░▒░│........│░▒▒░▒░▒▒▒░▒│.......", // 4  Etage
-  ".........│▒▒░▒▒▒▒▒░▒▒│........│▒░▒▒░▒░▒░▒░│.......", // 5  Etage
-  "┬───────┬│░▒▒░▒▒░▒▒░▒│┬──────┬│▒▒▒░▒▒▒▒▒░▒│┬─────┬", // 6  Petits Toits
+  "..................................................", // 0  Ciel noir pur (caché par le HUD)
+  "..........*.........*....................*........", // 1  Ciel très sombre
+  "......*..┬───────────┬........┬───────────┬...*...", // 2  Toits hauts
+  ".*.......│▒░▒▒░▒▒░▒▒░│...*....│▒▒░▒▒▒░▒▒░▒│.......", // 3
+  ".........│░▒▒░▒░▒░░▒░│........│░▒▒░▒░▒▒▒░▒│..*....", // 4
+  "....*....│▒▒░▒▒▒▒▒░▒▒│.....*..│▒░▒▒░▒░▒░▒░│.......", // 5  Horizon lumineux
+  "┬───────┬│░▒▒░▒▒░▒▒░▒│┬──────┬│▒▒▒░▒▒▒▒▒░▒│┬─────┬", // 6  Toits bas
   "│▌▌▌▌▌▌▌││▌▌▌▌▌▌▌▌▌▌▌││▌▌▌▌▌▌││▌▌▌▌▌▌▌▌▌▌▌││▌▌▌▌▌│", // 7  Bandeau de Néons
-  "│░▒▒░▒▒░││■■■■■■■■■■■││▒░▒░▒░││■■■■■■■■■■■││░▒░▒▒│", // 8  Mur RDC haut
-  "│▒▒░▒▒▒░│└AADAAAA┘AAAD│▒░▒▒░▒│└AADAAAA┘AAAD│▒░▒▒░│", // 9  Auvents & Portes
-  "│▄■░▄▒■▄│::V::::::V:::│▄░▒▄■░│::V::::::V:::│▄░■▄▒│", // 10 Vending sur place
-  "└AADAAAA┘:::▼:::::::::└AADAAA┘:::::::::::::└AADAA┘", // 11 Place grise foncée & Entrée
-  "::✦::::::::::::::~:::✦::::::::::::✦:::~::::::::::✦", // 12 Rue Principale
+  "│░▒▒░▒▒░││■■■■■■■■■■■││▒░▒░▒░││■■■■■■■■■■■││░▒░▒▒│", // 8  Mur
+  "│▒▒░▒▒▒░││▒▒░▒▒░▒▒░▒▒││▒░▒▒░▒││▒▒░▒▒░▒▒░▒▒││▒░▒▒░│", // 9  Mur (suite)
+  "│▄■░▄▒■▄│└AADAADAADAA┘│▄░▒▄■░│└AADAADAADAA┘│▄░■▄▒│", // 10 Auvents/Portes (Grands immeubles)
+  "└AADAAAD┘::::V::::V:::└AADAAA┘::::V::::V:::└AADAA┘", // 11 Auvents/Portes (Petits immeubles) & Trottoir
+ "::✦::::::::::::::~:::✦::::::::::::✦:::~::::::::::✦", // 12 Rue Principale
   ":::::~::::::::::::::::::::::~~::::::::::::::::::::", // 13 Rue
   "::::::::::::::::::::::::::::::::::::::::::::::::::", // 14 Rue dégagée (Spawn Joueur)
-  "========__________________________________========", // 15 Rambarde bloquante
-  "==================================================", // 16 Promenade
-  ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,", // 17 Sable sec
-  ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;", // 18 Sable humide
-  "≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈", // 19 Océan (Rivage)
-  "≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈", // 20 Océan profond
+  "::::::::__________________________________::::::::", // 15 Rambarde bloquante + rue dégagée sur les bords
+  ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,", // 16 Sable sec
+  ",,;;;;;,,,,,,,,;;;;;,,,,,,,,;;;;;,,,,,,,,;;;;;,,,,", // 17 Sable dynamique
+  ";;;≈≈≈;;;;;;;;;;≈≈≈;;;;;;;;;;≈≈≈;;;;;;;;;;≈≈≈;;;;;", // 18 Océan (rivage)
+  "≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈", // 19 Océan profond
+  "≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈", // 20 Océan très profond
 ];
 
-// Enseignes néon mises à jour pour les nouvelles coordonnées
+// Enseignes néon
 const NEON_SIGNS = [
   { y: 7, x: 10, len: 11, color: PALETTE.neonHotPink }, // Grand gauche
   { y: 7, x: 31, len: 11, color: PALETTE.neonCyan }, // Grand droit
@@ -212,7 +215,6 @@ const CHAR_TO_TILE = {
   ":": TILE.STREET,
   "~": TILE.PUDDLE,
   _: TILE.RAILING,
-  "=": TILE.PROMENADE,
   "≈": TILE.WATER,
   "▼": TILE.STAIRS,
   ",": TILE.SAND,
@@ -254,9 +256,17 @@ export const generateOverworld = (options = {}) => {
 
   const playerPos = { x: 25, y: 14 };
 
+  // Calcul dynamique de la ligne de côte
   const coastLine = [];
   for (let x = 0; x <= width; x++) {
-    coastLine[x] = 19; // Le rivage est à la ligne 19
+    let shoreY = height;
+    for (let y = 0; y <= height; y++) {
+      if (map[y][x] === TILE.WATER) {
+        shoreY = y;
+        break;
+      }
+    }
+    coastLine[x] = shoreY;
   }
 
   return {
@@ -309,11 +319,14 @@ export const getAdjacentNeonColor = (map, x, y) => {
   return null;
 };
 
+// --- Logique du Dégradé du Ciel ---
 const skyBgForRow = (y) => {
-  if (y === 0) return PALETTE.skyTop; // Noir pur
-  if (y === 1) return PALETTE.skyMid; // Noir bleuté
-  if (y <= 3) return PALETTE.skyLow; // Bleu nuit
-  return PALETTE.skyLow;
+  if (y === 5) return PALETTE.sky0; // Horizon lumineux (juste au-dessus des toits)
+  if (y === 4) return PALETTE.sky1;
+  if (y === 3) return PALETTE.sky2;
+  if (y === 2) return PALETTE.sky3;
+  if (y === 1) return PALETTE.sky4; // Sombre (visible sous le HUD)
+  return PALETTE.sky5;              // Noir pur pour y=0 (HUD) et y>=6 (bâtiments)
 };
 
 // ============================================
@@ -331,11 +344,13 @@ export const getTileRender = (
   const ch = _charMap?.[y]?.[x] || " ";
   if (tile == null) return { char: " ", color: "#000" };
 
+  // Calcul du fond du ciel pour la transparence
+  const currentSkyBg = skyBgForRow(y);
+
   switch (tile) {
-    // ── CIEL ──────────────
+    // ── CIEL & ÉTOILES ──────────
     case TILE.SKY: {
-      const bg = skyBgForRow(y);
-      return { char: " ", color: bg, bg };
+      return { char: " ", color: currentSkyBg, bg: currentSkyBg };
     }
     case TILE.STAR: {
       const wave = (Math.sin(tick * 0.08 + x * 2.7 + y * 4.1) + 1) / 2;
@@ -346,17 +361,16 @@ export const getTileRender = (
           : wave > 0.4
           ? PALETTE.starBright
           : PALETTE.starDim;
-      const bg = skyBgForRow(y);
       return {
         char: "·",
         color: c,
-        bg,
+        bg: currentSkyBg,
         opacity: op,
         glow: wave > 0.85 ? `0 0 3px ${PALETTE.starWarm}60` : null,
       };
     }
 
-    // ── STRUCTURE ───────────
+    // ── STRUCTURE (Gris Unifié) ───────────
     case TILE.BUILDING: {
       if ("│└┘".includes(ch)) {
         return { char: ch, color: PALETTE.wallDetail, bg: PALETTE.buildingBg };
@@ -368,7 +382,9 @@ export const getTileRender = (
       };
     }
     case TILE.ROOF_EDGE: {
-      const bg = y <= 6 ? skyBgForRow(y) : PALETTE.buildingBg;
+      // Pour les toits hauts (y < 6), le fond doit être le ciel dégradé
+      // Pour les toits bas intégrés, utiliser le fond du bâtiment
+      const bg = y < 6 ? currentSkyBg : PALETTE.buildingBg;
       return { char: ch, color: PALETTE.roofEdge, bg };
     }
     case TILE.WALL_DETAIL: {
@@ -453,7 +469,13 @@ export const getTileRender = (
 
     // ── COMMERCE ──────────────────────────────
     case TILE.DOOR:
-      return { char: "▌", color: PALETTE.doorWood, bg: PALETTE.doorFrame };
+      return { 
+        char: "█", 
+        color: PALETTE.windowWarm, 
+        bg: PALETTE.doorFrame,
+        glow: `0 0 8px ${PALETTE.windowWarm}90`,
+        bold: true
+      };
     case TILE.AWNING:
       return {
         char: "▀",
@@ -476,7 +498,7 @@ export const getTileRender = (
     case TILE.STREET: {
       const ci = (x * 13 + y * 7) % RENDER_CHARS.floor.length;
       const reflectColor = getAdjacentNeonColor(map, x, y);
-      const isPlaza = y <= 11; // La place grise foncée pour démarquer les bâtiments
+      const isPlaza = y <= 11;
       const bg = isPlaza ? PALETTE.plazaDark : PALETTE.streetDark;
 
       return {
@@ -507,90 +529,106 @@ export const getTileRender = (
         bold: true,
       };
 
-    // ── PROMENADE & RAILING ──────────────────
+    // ── RAILING ──────────────────────────────
     case TILE.RAILING:
       return { char: "═", color: PALETTE.railing, bg: PALETTE.streetDark };
-    case TILE.PROMENADE:
-      return {
-        char: RENDER_CHARS.promenade[(x + y) % RENDER_CHARS.promenade.length],
-        color: PALETTE.promenade,
-        opacity: 0.6,
-      };
 
-    // ── SABLE ─────────────────────────────────
-    case TILE.SAND: {
-      const wet = ch === ";";
-      const si = (x * 17 + y * 11) % 5;
-      const sandChar = wet
-        ? ["·", "·", ".", ".", "·"][si]
-        : ["·", ".", ":", ".", "·"][si];
-      const c = wet
-        ? PALETTE.sandWet
-        : (x + y) % 3 === 0
-        ? PALETTE.sandLight
-        : PALETTE.sandMid;
-      return {
-        char: sandChar,
-        color: c,
-        bg: wet ? PALETTE.sandDark : PALETTE.sandMid,
-        opacity: wet ? 0.5 : 0.6,
-      };
-    }
-
-    // ── EAU (Va-et-vient respirant) ───────────
+    // ── PLAGE (Sable + Eau Dynamique) ───────────
+    case TILE.SAND:
     case TILE.WATER: {
-      // Onde sinusoïdale locale pour créer la "respiration" de la houle
-      const wavePhase = Math.sin(tick * 0.08 + x * 0.15 + y * 0.3);
-      const waveOffset = Math.floor((wavePhase + 1) * 2); // 0 à 4
-      const charIdx = Math.max(0, Math.min(4, waveOffset));
+      const baseShoreY = coastLine[x] || 18;
 
-      const distFromShore = y - (coastLine[x] || 19);
-      let c =
-        distFromShore <= 0
-          ? PALETTE.waterHighlight
-          : distFromShore === 1
-          ? PALETTE.waterLight
-          : distFromShore <= 3
-          ? PALETTE.waterMid
-          : PALETTE.waterDeep;
-      let opacity = distFromShore <= 0 ? 0.85 : distFromShore <= 2 ? 0.75 : 0.6;
-      let glow = null;
+      const tide =
+        Math.sin(tick * 0.05) * 1.0 + Math.cos(tick * 0.03 + x * 0.1) * 0.5;
+      const dynamicShoreY = baseShoreY + tide;
 
-      // Reflets néons étendus sur l'eau (scan plus long car néons plus hauts)
-      const shoreY = coastLine[x] || 19;
-      for (let scan = 1; scan <= 12; scan++) {
-        const sy = shoreY - scan;
-        if (sy < 0) break;
-        const t = map[sy]?.[x];
-        if (t === TILE.NEON_SIGN) {
-          const nc = findSignColor(x, sy);
-          if (VIVID_NEON_COLORS.has(nc)) {
-            c = nc;
-            opacity = Math.max(0.12, 0.5 - distFromShore * 0.05 - scan * 0.02);
-            glow = `0 0 5px ${nc}40`;
+      const isWater = y >= dynamicShoreY;
+
+      if (isWater) {
+        // === RENDU EAU ===
+        const wavePhase = Math.sin(tick * 0.08 + x * 0.15 + y * 0.3);
+        const waveOffset = Math.floor((wavePhase + 1) * 2);
+        const charIdx = Math.max(0, Math.min(4, waveOffset));
+
+        const distFromShore = y - dynamicShoreY;
+
+        let c =
+          distFromShore <= 0.5
+            ? PALETTE.waterHighlight
+            : distFromShore <= 1.5
+            ? PALETTE.waterLight
+            : distFromShore <= 3.0
+            ? PALETTE.waterMid
+            : PALETTE.waterDeep;
+
+        let opacity =
+          distFromShore <= 0.5 ? 0.85 : distFromShore <= 2.5 ? 0.75 : 0.6;
+        let glow = null;
+
+        for (let scan = 1; scan <= 12; scan++) {
+          const sy = Math.floor(baseShoreY) - scan;
+          if (sy < 0) break;
+          const t = map[sy]?.[x];
+          if (t === TILE.NEON_SIGN) {
+            const nc = findSignColor(x, sy);
+            if (VIVID_NEON_COLORS.has(nc)) {
+              c = nc;
+              opacity = Math.max(
+                0.12,
+                0.5 - distFromShore * 0.05 - scan * 0.02
+              );
+              glow = `0 0 5px ${nc}40`;
+            }
+            break;
           }
-          break;
+          if (
+            t === TILE.LIT_WINDOW ||
+            t === TILE.STREETLIGHT ||
+            t === TILE.VENDING
+          )
+            break;
         }
+
         if (
-          t === TILE.LIT_WINDOW ||
-          t === TILE.STREETLIGHT ||
-          t === TILE.VENDING
-        )
-          break;
-      }
+          Math.abs(distFromShore) <= 0.8 &&
+          Math.sin(tick * 0.15 + x * 0.4) > 0.1
+        ) {
+          c = PALETTE.waterFoam;
+          opacity = 0.8;
+        }
 
-      if (distFromShore === 0 && Math.sin(tick * 0.15 + x * 0.4) > 0.3) {
-        c = PALETTE.waterFoam;
-        opacity = 0.6;
-      }
+        return {
+          char: RENDER_CHARS.water[charIdx],
+          color: c,
+          opacity,
+          glow,
+          animClass: `wave-${(x + y) % 3}`,
+        };
+      } else {
+        // === RENDU SABLE ===
+        const distToWater = dynamicShoreY - y;
+        const isWet = distToWater < 1.5;
 
-      return {
-        char: RENDER_CHARS.water[charIdx],
-        color: c,
-        opacity,
-        glow,
-        animClass: `wave-${(x + y) % 3}`,
-      };
+        const si = (x * 17 + y * 11) % 5;
+        const sandChar = isWet
+          ? ["·", "·", ".", ".", "·"][si]
+          : ["·", ".", ":", ".", "·"][si];
+
+        const c = isWet
+          ? PALETTE.sandWet
+          : distToWater < 2.5
+          ? PALETTE.sandBright
+          : (x + y) % 3 === 0
+          ? PALETTE.sandLight
+          : PALETTE.sandMid;
+
+        return {
+          char: sandChar,
+          color: c,
+          bg: isWet ? PALETTE.sandDark : PALETTE.sandMid,
+          opacity: isWet ? 0.5 : 0.6,
+        };
+      }
     }
 
     // ── ENTRÉE DONJON ─────────────────────────
@@ -605,6 +643,5 @@ export const getTileRender = (
 
     default:
       return { char: " ", color: "#000" };
-      8;
   }
 };
