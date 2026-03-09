@@ -6541,7 +6541,7 @@ function DownwardsNeon() {
               animation: "glow 1s ease-in-out infinite",
             }}
           >
-            ♀ PRINCESS SAVED ♀
+            ♀ BETTIE RESCUED ♀
           </div>
           <div
             style={{
