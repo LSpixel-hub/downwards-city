@@ -5593,7 +5593,7 @@ function DownwardsNeon() {
                 color: NEON.red,
               },
               {
-                label: "BOW",
+                label: "PULSE",
                 value: hasBow ? `+${bow.bonus}` : "NO",
                 color: hasBow ? getBowColor(bow.bonus) : NEON.red,
               },
