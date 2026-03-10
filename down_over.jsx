@@ -5595,7 +5595,7 @@ function DownwardsNeon() {
               {
                 label: "PULSE",
                 value: hasBow ? `+${bow.bonus}` : "NO",
-                color: hasBow ? getBowColor(bow.bonus) : NEON.red,
+                color: hasBow ? getBowColor(bow.bonus) : NEON.purple,
               },
             ].map((item, i) => (
               <div
