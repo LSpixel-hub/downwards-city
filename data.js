@@ -469,37 +469,44 @@ export const POTIONS = [
   { name: "ENERGY DRINK", effect: "dmgBonus", value: 2 },
 ];
 
-// Vendor scrolls
+// ============================================
+// VENDOR SCROLLS - THE BLACK MARKET (Pirated Software & Tapes)
+// ============================================
 export const VENDOR_SCROLLS = {
+  // Tier A : Utilitaires de base sur disquette 3"
   A: [
-    { name: "Healing", effect: "fullHp", price: 8 },
-    { name: "Vitality", effect: "maxHp5", price: 14 },
-    { name: "Toughness", effect: "armor1", price: 18 },
-    { name: "Precision", effect: "dmg1", price: 20 },
+    { name: "Disk Doctor.exe", effect: "fullHp", price: 8 },      // Répare les secteurs défectueux
+    { name: "RAM Doubler.tap", effect: "maxHp5", price: 14 },     // Augmente la mémoire
+    { name: "Write Protect.sys", effect: "armor1", price: 18 },   // Bloque l'écriture (armure)
+    { name: "Turbo Load.bas", effect: "dmg1", price: 18 },        // Accélère la vitesse d'exécution
   ],
+  // Tier B : Logiciels crackés et extensions
   B: [
-    { name: "Restore", effect: "fullHp", price: 12 },
-    { name: "Strength", effect: "maxHp10", price: 22 },
-    { name: "Shell", effect: "armor2", price: 28 },
-    { name: "Mastery", effect: "dmg2", price: 30 },
+    { name: "Clean Boot.rom", effect: "fullHp", price: 12 },      // Redémarrage propre du système
+    { name: "16K Rampack", effect: "maxHp10", price: 25 },        // L'extension mémoire culte du ZX Spectrum
+    { name: "Firewall v1.bat", effect: "armor2", price: 25 },     // Bloque les intrusions
+    { name: "Overclock Z80.bin", effect: "dmg2", price: 25 },     // Pousse le processeur dans ses retranchements
   ],
+  // Tier C : Outils de Hackers
   C: [
-    { name: "Old Blood", effect: "maxHp15", price: 35 },
-    { name: "Aegis", effect: "armor3", price: 40 },
-    { name: "Pure Strike", effect: "dmg3", price: 42 },
+    { name: "Legacy Firmware", effect: "maxHp15", price: 35 },    // Le vieux code robuste des ancêtres (Old Blood)
+    { name: "Anti-Virus.exe", effect: "armor3", price: 40 },      // La protection ultime (Aegis)
+    { name: "Hex Editor.asm", effect: "dmg3", price: 42 },        // Permet de modifier la matrice à la volée
   ],
+  // Tier D : Warez d'élite
   D: [
-    { name: "Titan", effect: "maxHp20", price: 55 },
-    { name: "Steel", effect: "armor4", price: 55 },
-    { name: "Destruction", effect: "dmg4", price: 60 },
-    { name: "Treasure", effect: "gold2x", price: 40 },
-    { name: "Master TP", effect: "masterTp", price: 30 },
+    { name: "128K Upgrade.tap", effect: "maxHp20", price: 55 },   // L'upgrade ultime de la machine (Titan)
+    { name: "RSA Encryption", effect: "armor4", price: 55 },      // Chiffrement impénétrable (Steel)
+    { name: "Logic Bomb.exe", effect: "dmg4", price: 60 },        // Dégâts massifs dans le système (Destruction)
+    { name: "Coin Miner.sys", effect: "gold2x", price: 40 },      // Hack du système bancaire (Treasure)
+    { name: "Warp Zone.poke", effect: "masterTp", price: 30 },    // Altération de la mémoire de positionnement (Master TP)
   ],
+  // Tier E : Démos et Exploits légendaires
   E: [
-    { name: "Immortal", effect: "maxHp30", price: 80 },
-    { name: "Fortress", effect: "armor5", price: 75 },
-    { name: "Executioner", effect: "dmg5", price: 80 },
-    { name: "The Pact", effect: "pact", price: 45 },
+    { name: "God Mode.poke", effect: "maxHp30", price: 80 },      // Le cheat code absolu de l'immortalité
+    { name: "Kernel Defense", effect: "armor5", price: 75 },      // La Forteresse du système d'exploitation
+    { name: "Zero-Day.exploit", effect: "dmg5", price: 80 },      // L'attaque parfaite que personne ne peut parer
+    { name: "Daemon Process", effect: "pact", price: 45 },        // Un programme fantôme (Pacte avec le diable)
   ],
 };
 
