@@ -148,7 +148,7 @@ export const getObjectiveProgressText = (objective, stats) => {
     return `SWAP ${stats.classSwitched ? "FAILED" : "CLEAR"}`;
   }
   if (objective.type === "NO_PRAY")
-    return `PRAY ${stats.prayed ? "FAILED" : "CLEAR"}`;
+    return `RESTORE ${stats.prayed ? "FAILED" : "CLEAR"}`;
   if (objective.type === "NO_TELEPORT") {
     return `WARP ${stats.teleported ? "FAILED" : "CLEAR"}`;
   }
