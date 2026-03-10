@@ -501,9 +501,9 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
       isBoss: true,
     };
 
-    monsters = [bossMonster];
+   monsters = [bossMonster];
 
-    // Ajouter les minions autour du boss
+    // Ajouter les subroutines autour du boss
     const minionOffsets = [[-2, -1], [2, -1], [-2, 1], [2, 1], [0, -2], [0, 2]];
     const shuffledOffsets = minionOffsets.sort(() => Math.random() - 0.5);
     const minionHp = 15 + level * 1.5;
@@ -516,8 +516,8 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
       if (minionX >= 1 && minionX <= GRID_WIDTH && minionY >= 1 && minionY <= GRID_HEIGHT
         && newMap[minionY][minionX] === TILE.FLOOR) {
         monsters.push({
-          char: "m",
-          name: `${boss.name}'s Minion`,
+          char: "s", // <--- Changé de "m" à "s" pour Subroutine
+          name: `${boss.name} Subroutine`, // <--- Le nouveau nom !
           hp: Math.round(minionHp),
           dmg: Math.round(minionDmg),
           color: boss.color2,
