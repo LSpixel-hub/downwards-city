@@ -274,7 +274,8 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
     } else {
       armorData = forcePerfectArmor(getArmorForLevel(boostedLevel));
       if (!armorData) {
-        armorData = { name: "Perfect Ancient Shield", ar: 8, isPerfect: true };
+        // On remplace "Ancient Shield" par "Anti-Static Shield" ou "Faraday Plating"
+        armorData = { name: "Perfect Anti-Static Shield", ar: 8, isPerfect: true };
       }
     }
 
