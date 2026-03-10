@@ -127,42 +127,42 @@ export const BIOMES = [
   },
 ];
 
-// Classes
+// Classes - The Z80 Resistance
 export const CLASSES = {
   1: {
-    name: "WARRIOR",
+    name: "CRACKER", // Remplace WARRIOR
     color: NEON.yellow,
-    desc: "Melee fighter",
+    desc: "Brute force attack", // Au lieu de Melee fighter
     glow: "0 0 10px #fff01f, 0 0 20px #fff01f",
   },
   2: {
-    name: "ARCHER",
+    name: "PHREAKER", // Remplace ARCHER
     color: NEON.green,
-    desc: "Piercing arrows",
+    desc: "Ranged exploits", // Au lieu de Piercing arrows
     glow: "0 0 10px #39ff14, 0 0 20px #39ff14",
   },
   3: {
-    name: "PRIEST",
+    name: "SYSOP", // Remplace PRIEST
     color: NEON.white,
-    desc: "Heal with gold",
+    desc: "System restore", // Au lieu de Heal with gold
     glow: "0 0 10px #ffffff, 0 0 20px #ffffff",
   },
   4: {
-    name: "BERSERKER",
+    name: "OVERCLOCKER", // Remplace BERSERKER
     color: NEON.red,
-    desc: "Double damage",
+    desc: "Double hardware DMG", // Au lieu de Double damage
     glow: "0 0 10px #ff0055, 0 0 20px #ff0055",
   },
   5: {
-    name: "TRANSMUTER",
+    name: "DEBUGGER", // Remplace TRANSMUTER
     color: NEON.cyan,
-    desc: "Phase walls",
+    desc: "Bypass firewalls", // Au lieu de Phase walls
     glow: "0 0 10px #00fff9, 0 0 20px #00fff9",
   },
   6: {
-    name: "MAGE",
+    name: "HEX EDITOR", // Remplace MAGE
     color: NEON.blue,
-    desc: "Polymorph",
+    desc: "Recode enemies", // Au lieu de Polymorph
     glow: "0 0 10px #4d6dff, 0 0 20px #4d6dff",
   },
 };
@@ -510,9 +510,9 @@ export const VENDOR_SCROLLS = {
 
 // Gems
 export const GEMS = [
-  { class: 2, color: NEON.green, name: "GREEN GEM", unlock: "ARCHER" },
-  { class: 3, color: NEON.white, name: "WHITE GEM", unlock: "PRIEST" },
-  { class: 4, color: NEON.red, name: "RED GEM", unlock: "BERSERKER" },
-  { class: 5, color: NEON.cyan, name: "CYAN GEM", unlock: "TRANSMUTER" },
-  { class: 6, color: NEON.blue, name: "BLUE GEM", unlock: "MAGE" },
+  { class: 2, color: NEON.green, name: "GREEN GEM", unlock: "PHREAKER" },
+  { class: 3, color: NEON.white, name: "WHITE GEM", unlock: "SYSOP" },
+  { class: 4, color: NEON.red, name: "RED GEM", unlock: "OVERCLOCKER" },
+  { class: 5, color: NEON.cyan, name: "CYAN GEM", unlock: "DEBUGGER" },
+  { class: 6, color: NEON.blue, name: "BLUE GEM", unlock: "HEX EDITOR" },
 ];
