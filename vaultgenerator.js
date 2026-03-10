@@ -85,16 +85,16 @@ const LORE_FRAGMENTS = [
 ];
 
 // ============================================
-// TABLE DE BOSS (Boss Arena)
+// TABLE DE BOSS (Boss Arena) - C64 CULT EDITION
 // ============================================
 
 const VAULT_BOSSES = [
-  { name: "NEON HYDRA",    char: "H", ai: "STALKER",    hpMult: 3.0, dmgMult: 1.5, color1: "#ff0055", color2: "#ff6b35", effect: { type: "REGEN", value: 5 },                              minions: 2 },
-  { name: "CHROME GOLEM",  char: "G", ai: "JUGGERNAUT", hpMult: 4.0, dmgMult: 2.0, color1: "#aaaaaa", color2: "#4d6dff", effect: { type: "PARRY", chance: 0.5, msg: "PARRY" },              minions: 1 },
-  { name: "VOID EMPRESS",  char: "E", ai: "ERRATIC",    hpMult: 2.5, dmgMult: 1.3, color1: "#b026ff", color2: "#ff00ff", effect: { type: "VAMPIRISM", chance: 0.3, msg: "LIFE DRAIN" },     minions: 3 },
-  { name: "SYNTH REAPER",  char: "R", ai: "STALKER",    hpMult: 2.0, dmgMult: 1.8, color1: "#00fff9", color2: "#39ff14", effect: { type: "DRAIN", chance: 0.35, msg: "STAT DRAIN" },        minions: 2 },
-  { name: "BLOOD TITAN",   char: "T", ai: "JUGGERNAUT", hpMult: 5.0, dmgMult: 1.2, color1: "#ff0055", color2: "#ff2a6d", effect: { type: "HEAVY_BLOW", chance: 0.4, msg: "HEAVY BLOW" },    minions: 0 },
-  { name: "PHANTOM QUEEN", char: "Q", ai: "ERRATIC",    hpMult: 2.2, dmgMult: 1.6, color1: "#ffffff", color2: "#b026ff", effect: { type: "WALL_PHASE" },                                    minions: 3 },
+  { name: "1541 DISK HYDRA", char: "H", ai: "STALKER",    hpMult: 3.0, dmgMult: 1.5, color1: "#ff0055", color2: "#ff6b35", effect: { type: "REGEN", value: 5 },                              minions: 2 },
+  { name: "PETSCII GOLEM",   char: "G", ai: "JUGGERNAUT", hpMult: 4.0, dmgMult: 2.0, color1: "#aaaaaa", color2: "#4d6dff", effect: { type: "PARRY", chance: 0.5, msg: "SYNTAX ERROR" },        minions: 1 },
+  { name: "VIC-II EMPRESS",  char: "E", ai: "ERRATIC",    hpMult: 2.5, dmgMult: 1.3, color1: "#b026ff", color2: "#ff00ff", effect: { type: "VAMPIRISM", chance: 0.3, msg: "MEMORY DRAIN" },    minions: 3 },
+  { name: "SID CHIP REAPER", char: "R", ai: "STALKER",    hpMult: 2.0, dmgMult: 1.8, color1: "#00fff9", color2: "#39ff14", effect: { type: "DRAIN", chance: 0.35, msg: "FILTER DRAIN" },       minions: 2 },
+  { name: "PEEK & POKE TITAN",char:"T", ai: "JUGGERNAUT", hpMult: 5.0, dmgMult: 1.2, color1: "#ff0055", color2: "#ff2a6d", effect: { type: "HEAVY_BLOW", chance: 0.4, msg: "FATAL OVERWRITE" },minions: 0 },
+  { name: "SYS 64738 QUEEN", char: "Q", ai: "ERRATIC",    hpMult: 2.2, dmgMult: 1.6, color1: "#ffffff", color2: "#b026ff", effect: { type: "WALL_PHASE" },                                   minions: 3 },
 ];
 
 export const getVaultStairsChance = (level) => {
