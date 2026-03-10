@@ -19,43 +19,43 @@ const TILE = {
 // ============================================
 
 const LEGENDARY_WEAPONS = [
-  { name: "SUNBREAKER",    short: "SUNB", family: "CLEAVE", baseDmg: 0, bonusPct: 0.40 },
-  { name: "VOID SCYTHE",   short: "VOID", family: "CRIT",  baseDmg: 0, bonusPct: 0.35 },
-  { name: "NEON EXCALIBUR", short: "EXCL", family: "KNOCKBACK", baseDmg: 0, bonusPct: 0.45 },
-  { name: "PLASMA EDGE",   short: "PLSM", family: "CRIT",  baseDmg: 0, bonusPct: 0.30 },
-  { name: "CHRONO BLADE",  short: "CHRN", family: "CLEAVE", baseDmg: 0, bonusPct: 0.38 },
-  { name: "STELLAR MACE",  short: "STLR", family: "KNOCKBACK", baseDmg: 0, bonusPct: 0.42 },
+  { name: "MAINFRAME BREAKER",   short: "MNFR", family: "CLEAVE",    baseDmg: 0, bonusPct: 0.40 }, // Ex-Sunbreaker
+  { name: "HEXADECIMAL SCYTHE",  short: "HEXS", family: "CRIT",      baseDmg: 0, bonusPct: 0.35 }, // Ex-Void Scythe
+  { name: "THE HOLY KEMPSTON",   short: "KEMP", family: "KNOCKBACK", baseDmg: 0, bonusPct: 0.45 }, // Ex-Neon Excalibur
+  { name: "CRT PHOSPHOR BLADE",  short: "PHOS", family: "CRIT",      baseDmg: 0, bonusPct: 0.30 }, // Ex-Plasma Edge
+  { name: "50HZ SYNC CLEAVER",   short: "SYNC", family: "CLEAVE",    baseDmg: 0, bonusPct: 0.38 }, // Ex-Chrono Blade
+  { name: "SPEEDKING JOYSTICK",   short: "JOY!", family: "KNOCKBACK", baseDmg: 0, bonusPct: 0.42 }, // Ex-Stellar Mace
 ];
 
 const LEGENDARY_ARMORS = [
-  { name: "AEGIS OF DAWN",    bonusAR: 0, bonusPct: 0.50 },
-  { name: "NEON CARAPACE",    bonusAR: 0, bonusPct: 0.45 },
-  { name: "VOIDPLATE",        bonusAR: 0, bonusPct: 0.55 },
-  { name: "CELESTIAL GUARD",  bonusAR: 0, bonusPct: 0.40 },
-  { name: "PLASMA SHELL",     bonusAR: 0, bonusPct: 0.48 },
+  { name: "SINCLAIR AEGIS",         bonusAR: 0, bonusPct: 0.50 }, // Ex-Aegis of Dawn
+  { name: "TITANIUM TOWER SHELL",   bonusAR: 0, bonusPct: 0.45 }, // Ex-Neon Carapace
+  { name: "FARADAY HEAVY PLATE",    bonusAR: 0, bonusPct: 0.55 }, // Ex-Voidplate
+  { name: "MOTHERBOARD BARRICADE",  bonusAR: 0, bonusPct: 0.40 }, // Ex-Celestial Guard
+  { name: "LIQUID-COOLED RIG",      bonusAR: 0, bonusPct: 0.48 }, // Ex-Plasma Shell
 ];
 
 // ============================================
-// TABLE D'ÉLIXIRS (Alchemist Lab)
+// TABLE DE CONSOMMABLES (The Modder's Lab)
 // ============================================
 
 const VAULT_ELIXIRS = [
-  { name: "ELIXIR OF VITALITY", effect: "maxHp30",  desc: "+30 MAX HP", price: 0 },
-  { name: "ELIXIR OF MIGHT",    effect: "dmg10pct", desc: "+10% DMG",   price: 0 },
-  { name: "ELIXIR OF IRON",     effect: "armor10",  desc: "+10 ARMOR",  price: 0 },
+  { name: "JOLT COLA INFUSION", effect: "maxHp30",  desc: "+30 MAX HP", price: 0 }, // Ex-Vitality
+  { name: "OVERVOLT SYRUP",     effect: "dmg10pct", desc: "+10% DMG",   price: 0 }, // Ex-Might
+  { name: "THERMAL PASTE SHOT", effect: "armor10",  desc: "+10 ARMOR",  price: 0 }, // Ex-Iron
 ];
 
 // ============================================
-// TABLE DE SACRIFICES (Sacrifice Altar)
+// TABLE DE SACRIFICES (The Hex Altar)
 // ============================================
 
 const SACRIFICE_DEALS = [
-  { name: "BLOOD PACT",    sacrificeType: "maxHp",   sacrificeAmt: 20, rewardType: "dmgBonus",      rewardAmt: 8,  desc: "-20 MAX HP → +8 DMG" },
-  { name: "IRON EXCHANGE", sacrificeType: "armor",   sacrificeAmt: 5,  rewardType: "maxHp",         rewardAmt: 15, desc: "-5 ARMOR → +15 MAX HP" },
-  { name: "PAIN FOCUS",    sacrificeType: "maxHp",   sacrificeAmt: 15, rewardType: "armor",         rewardAmt: 6,  desc: "-15 MAX HP → +6 ARMOR" },
-  { name: "DARK BARGAIN",  sacrificeType: "dmgBonus", sacrificeAmt: 3, rewardType: "armor",         rewardAmt: 8,  desc: "-3 DMG → +8 ARMOR" },
-  { name: "SOUL TRADE",    sacrificeType: "maxHp",   sacrificeAmt: 25, rewardType: "dmgBonus",      rewardAmt: 10, desc: "-25 MAX HP → +10 DMG" },
-  { name: "VOID GAMBIT",   sacrificeType: "armor",   sacrificeAmt: 8,  rewardType: "dmgBonus",      rewardAmt: 6,  desc: "-8 ARMOR → +6 DMG" },
+  { name: "MEMORY LEAK",      sacrificeType: "maxHp",   sacrificeAmt: 20, rewardType: "dmgBonus", rewardAmt: 8,  desc: "-20 MAX HP → +8 DMG" },
+  { name: "DOWNCLOCK",        sacrificeType: "armor",   sacrificeAmt: 5,  rewardType: "maxHp",    rewardAmt: 15, desc: "-5 ARMOR → +15 MAX HP" },
+  { name: "UNDERVOLT",        sacrificeType: "maxHp",   sacrificeAmt: 15, rewardType: "armor",    rewardAmt: 6,  desc: "-15 MAX HP → +6 ARMOR" },
+  { name: "FIREWALL BYPASS",  sacrificeType: "dmgBonus", sacrificeAmt: 3, rewardType: "armor",    rewardAmt: 8,  desc: "-3 DMG → +8 ARMOR" },
+  { name: "KERNEL PANIC",     sacrificeType: "maxHp",   sacrificeAmt: 25, rewardType: "dmgBonus", rewardAmt: 10, desc: "-25 MAX HP → +10 DMG" },
+  { name: "HARDWARE STRIP",   sacrificeType: "armor",   sacrificeAmt: 8,  rewardType: "dmgBonus", rewardAmt: 6,  desc: "-8 ARMOR → +6 DMG" },
 ];
 
 // ============================================
