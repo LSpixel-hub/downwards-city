@@ -6225,7 +6225,7 @@ function DownwardsNeon() {
               {[
                 {
                   icon: currentClass === 6 ? "✦" : "→",
-                  label: currentClass === 6 ? "POLY" : "FIRE",
+                  label: currentClass === 6 ? "RECODE" : "FIRE",
                   action: () => {
                     if (currentClass === 6) {
                       setShowDirectionPicker("polymorph");
@@ -6253,7 +6253,7 @@ function DownwardsNeon() {
                 },
                 {
                   icon: "✚",
-                  label: "PRAY",
+                  label: "RESTORE",
                   action: pray,
                   active: true,
                   mobileOnly: false,
