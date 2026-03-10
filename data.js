@@ -23,107 +23,105 @@ export const NEON = {
 // Biomes
 export const BIOMES = [
   {
-    name: "UNDER TOWN",
+    name: "CORRUPTED SECTORS", // Les premiers secteurs défectueux du disque
     floorColor: "#6b624a", // Sable clair (sandBright)
     corridorColor: NEON.orange,
     floorChars: ["·", "·", "·", "⋅", "∙"],
     levels: [1, 5],
-    // Plasma : bleu espace / indigo froid — remplace le rose/rouge par défaut
-    plasmaColor1: "#302c20", // Sable sombre au fond
-    plasmaColor2: "#002244", // Eau profonde au fond
-    gridColor: "0,119,187", // Lueur de la grille en bleu océan (RGB de #0077bb)
-    bgFrom: "#050a10", // Fond très sombre (abysses)
+    plasmaColor1: "#302c20", 
+    plasmaColor2: "#002244", 
+    gridColor: "0,119,187", 
+    bgFrom: "#050a10", 
     bgTo: "#0f1520",
   },
   {
-    name: "FLOODED CAVERNS",
+    name: "FLOODED DATABANKS", // Les banques de données noyées sous le liquide de refroidissement
     floorColor: NEON.blue,
     corridorColor: NEON.green,
     floorChars: ["·", "~", "≈", "∼", "·"],
     levels: [6, 10],
-    // Plasma : bleu abysse + bleu-sarcelle profond — atténue la dominante verte
     plasmaColor2: "#0077aa",
-    gridColor: "0,150,255", // bleu aqua
+    gridColor: "0,150,255", 
     bgFrom: "#000a1a",
     bgTo: "#001a2a",
   },
   {
-    name: "TOXIC SWAMP",
+    name: "BATTERY ACID SWAMP", // L'acide de batterie des vieilles cartes mères qui a coulé
     floorColor: NEON.green,
     corridorColor: NEON.yellow,
     floorChars: ["·", "∘", "ˑ", "·", "·"],
     levels: [11, 15],
-    gridColor: "57,255,20", // vert néon
+    gridColor: "57,255,20", 
     bgFrom: "#000f00",
     bgTo: "#001a05",
   },
   {
-    name: "ARCANE SANCTUARY",
+    name: "THE PETSCII SANCTUARY", // Le premier temple du culte, dédié au jeu de caractères du C64
     floorColor: NEON.magenta,
     corridorColor: NEON.cyan,
     floorChars: ["·", "⁂", "·", "·", "˙"],
     levels: [16, 20],
-    gridColor: "255,0,255", // magenta
+    gridColor: "255,0,255", 
     bgFrom: "#0f0015",
     bgTo: "#1a0030",
   },
   {
-    name: "MOSSY RUINS",
+    name: "ABANDONWARE RUINS", // Les ruines d'anciens logiciels oubliés
     floorColor: NEON.green,
     corridorColor: NEON.orange,
     floorChars: ["·", "∘", "·", "⋅", "·"],
     levels: [21, 25],
-    gridColor: "80,200,60", // vert mousse
+    gridColor: "80,200,60", 
     bgFrom: "#060d00",
     bgTo: "#0d1800",
   },
   {
-    name: "ASTRAL RIFT",
+    name: "THE KERNAL RIFT", // Une faille dans le système d'exploitation du C64 (Le KERNAL)
     floorColor: NEON.cyan,
     corridorColor: NEON.pink,
     floorChars: ["·", "⁚", "·", "˙", "·"],
     levels: [26, 30],
-    gridColor: "0,255,249", // cyan
+    gridColor: "0,255,249", 
     bgFrom: "#000d1a",
     bgTo: "#00101f",
   },
   {
-    name: "CRYSTAL CAVES",
+    name: "SILICON CAVERNS", // Les mines de silicium brut pour les processeurs
     floorColor: NEON.purple,
     corridorColor: NEON.white,
     floorChars: ["·", "⟡", "·", "⊹", "·"],
     levels: [31, 35],
-    gridColor: "176,38,255", // violet cristal
+    gridColor: "176,38,255", 
     bgFrom: "#080010",
     bgTo: "#120020",
   },
   {
-    name: "INFERNAL FORGE",
+    name: "OVERCLOCKED FORGE", // Là où les démons poussent les processeurs à fond
     floorColor: NEON.red,
     corridorColor: NEON.yellow,
     floorChars: ["·", "▪", "·", "▫", "·"],
     levels: [36, 40],
-    gridColor: "255,50,0", // rouge forge
+    gridColor: "255,50,0", 
     bgFrom: "#150000",
     bgTo: "#250500",
   },
   {
-    name: "CELESTIAL TEMPLE",
+    name: "TEMPLE OF THE 6510", // Le temple final, dédié au mythique processeur 6510 du C64
     floorColor: NEON.yellow,
     corridorColor: NEON.purple,
     floorChars: ["·", "⁺", "·", "˚", "·"],
     levels: [41, 45],
-    gridColor: "255,220,0", // or céleste
+    gridColor: "255,220,0", 
     bgFrom: "#0f0a00",
     bgTo: "#1a1200",
   },
   {
-    name: "BLOODY NIGHTMARE",
+    name: "FATAL EXCEPTION CORE", // Le fond absolu, l'erreur système d'où naît le mal
     floorColor: NEON.red,
     corridorColor: NEON.cyan,
     floorChars: ["·", "×", "·", "·", "⁖"],
     levels: [46, 50],
-    gridColor: "200,0,60", // rouge sang
+    gridColor: "200,0,60", 
     bgFrom: "#150000",
     bgTo: "#200010",
   },
