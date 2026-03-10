@@ -162,10 +162,10 @@ export const getWeaponForLevel = (level) => {
     }
   }
 
-  const finalName =
-    selectedWeaponType.names[
-      Math.floor(Math.random() * selectedWeaponType.names.length)
-    ];
+  // --- NOUVELLE LOGIQUE ICI ---
+  const nameIndex = Math.floor(Math.random() * selectedWeaponType.names.length);
+  const finalName = selectedWeaponType.names[nameIndex];
+  
   const minDmg = selectedWeaponType.dmg[0];
   const maxDmg = selectedWeaponType.dmg[1];
   const baseDmg = minDmg + Math.floor(Math.random() * (maxDmg - minDmg + 1));
@@ -176,6 +176,18 @@ export const getWeaponForLevel = (level) => {
     : 0;
   const finalDmg = baseDmg + perfectBonus;
   const displayName = isPerfect ? `Perfect ${finalName}` : finalName;
+
+  return {
+    name: displayName,
+    // On associe le bon "short" selon l'index tiré, ou on garde le short simple s'il n'y en a qu'un
+    short: Array.isArray(selectedWeaponType.short) ? selectedWeaponType.short[nameIndex] : selectedWeaponType.short,
+    baseDmg,
+    perfectBonus,
+    dmg: finalDmg,
+    family: selectedWeaponType.family,
+    isPerfect,
+  };
+};
 
   // On retourne maintenant la "family" dans l'objet arme
   return {
