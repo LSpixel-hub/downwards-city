@@ -192,7 +192,7 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
     // THÈME 1 : THE GOLDEN BANK (Or massif)
     // ==========================================
     customBiome = {
-      name: "THE GOLDEN BANK",
+      name: "THE GILDED DATABANK",
       floorColor: "#fff01f",
       corridorColor: "#ffaa00",
       floorChars: ["¤", "·", "·", "˙", "·"],
@@ -221,7 +221,7 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
     // THÈME 2 : ANCIENT ARMORY (Équipement)
     // ==========================================
     customBiome = {
-      name: "ANCIENT ARMORY",
+      name: "HARDWARE CACHE",
       floorColor: "#aaaaaa",
       corridorColor: "#ff0055",
       floorChars: ["▪", "▫", "·", "·", "·"],
@@ -286,7 +286,7 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
     // THÈME 3 : ALCHEMIST LAB (Potions & Élixirs)
     // ==========================================
     customBiome = {
-      name: "ALCHEMIST LAB",
+      name: "THE MODDER'S LAB",
       floorColor: "#00fff9",
       corridorColor: "#b026ff",
       floorChars: ["∘", "·", "⁘", "·", "·"],
@@ -312,7 +312,7 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
     // THÈME 4 : CRYSTAL CAVERN (Gemmes)
     // ==========================================
     customBiome = {
-      name: "CRYSTAL CAVERN",
+      name: "QUARTZ OSCILLATOR",
       floorColor: "#b026ff",
       corridorColor: "#ff2a6d",
       floorChars: ["⟡", "⊹", "·", "·", "·"],
@@ -353,7 +353,7 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
     // THÈME 5 : SACRIFICE ALTAR
     // ==========================================
     customBiome = {
-      name: "SACRIFICE ALTAR",
+      name: "CORRUPTED REGISTRY",
       floorColor: "#8b0000",
       corridorColor: "#b026ff",
       floorChars: ["†", "·", "·", "‡", "·"],
@@ -408,7 +408,7 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
     newMap[stairsPos.y][stairsPos.x] = TILE.STAIRS;
 
     customBiome = {
-      name: "ECHO SHRINE",
+      name: "READ-ONLY MEMORY",
       floorColor: "#00cccc",
       corridorColor: "#006666",
       floorChars: ["·", "∴", "·", "·", "˙"],
