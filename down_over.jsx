@@ -4314,7 +4314,6 @@ function DownwardsNeon() {
 
   // ======================================================================================
 
-
   useEffect(() => {
     const handleKeyDown = (e) => {
       const gs = gameStateRef.current;
@@ -4634,11 +4633,7 @@ function DownwardsNeon() {
 
   const biome = isSecretVault && activeBiome ? activeBiome : getBiome(level);
   const windowBorderColor =
-    level === 0
-      ? OW_PALETTE.neonMagenta
-      : level <= 5
-      ? NEON.pink
-      : biome.corridorColor;
+    level === 0 ? "#0077bb" : level <= 5 ? "#0077bb" : biome.corridorColor;
 
   const activeMonstersMap = useMemo(() => {
     const lookup = new Map();
@@ -4730,7 +4725,7 @@ function DownwardsNeon() {
             char: rendered.char,
             color: isStairs ? "#ffffff" : rendered.color,
             bg: rendered.bg || null,
-            glow: isStairs ? glowStyle("#ffffff") : (rendered.glow || "none"),
+            glow: isStairs ? glowStyle("#ffffff") : rendered.glow || "none",
             animation: isStairs
               ? "flash 0.7s ease-in-out infinite"
               : rendered.animClass
@@ -6541,7 +6536,7 @@ function DownwardsNeon() {
               animation: "glow 1s ease-in-out infinite",
             }}
           >
-            ♀ BETTIE RESCUED ♀
+            ♀ PRINCESS SAVED ♀
           </div>
           <div
             style={{
