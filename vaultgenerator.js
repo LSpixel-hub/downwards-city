@@ -217,8 +217,8 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
     }
 
   } else if (themeRoll < 0.30) {
-    // ==========================================
-    // THÈME 2 : ANCIENT ARMORY (Équipement)
+   // ==========================================
+    // THÈME 2 : HARDWARE CACHE (Équipement)
     // ==========================================
     customBiome = {
       name: "HARDWARE CACHE",
@@ -269,12 +269,13 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
           isLegendary: true,
         };
       } else {
-        armorData = { name: "AEGIS OF DAWN", ar: 12, isPerfect: true, isLegendary: true };
+        // Fallback légendaire mis à jour !
+        armorData = { name: "SINCLAIR AEGIS", ar: 12, isPerfect: true, isLegendary: true };
       }
     } else {
       armorData = forcePerfectArmor(getArmorForLevel(boostedLevel));
       if (!armorData) {
-        // On remplace "Ancient Shield" par "Anti-Static Shield" ou "Faraday Plating"
+        // On remplace "Ancient Shield" par "Anti-Static Shield"
         armorData = { name: "Perfect Anti-Static Shield", ar: 8, isPerfect: true };
       }
     }
