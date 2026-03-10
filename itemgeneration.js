@@ -188,15 +188,3 @@ export const getWeaponForLevel = (level) => {
     isPerfect,
   };
 };
-
-  // On retourne maintenant la "family" dans l'objet arme
-  return {
-    name: displayName,
-    short: selectedWeaponType.short,
-    baseDmg,
-    perfectBonus,
-    dmg: finalDmg,
-    family: selectedWeaponType.family,
-    isPerfect,
-  };
-};
