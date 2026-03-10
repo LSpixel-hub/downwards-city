@@ -459,12 +459,14 @@ export const ARMORS = [
   { names: ["Holy Z80 Architecture", "Sinclair ULA Forcefield", "Perfect AY-3-8912 Rig"], baseAR: 55, minLevel: 41, maxLevel: 50 },
 ];
 
-// Potions
+// ============================================
+// CONSUMABLES - HACKER'S SURVIVAL (remplace les Potions)
+// ============================================
 export const POTIONS = [
-  { name: "HEALING", effect: "hp", value: 5 },
-  { name: "STRENGTH", effect: "maxHp", value: 5 },
-  { name: "TOUGHNESS", effect: "armor", value: 1 },
-  { name: "PRECISION", effect: "dmgBonus", value: 2 },
+  { name: "FRESH SODA", effect: "hp", value: 5 },         
+  { name: "LEMON COLA", effect: "maxHp", value: 5 },      
+  { name: "SYNTH-VITAMINS", effect: "armor", value: 1 },    
+  { name: "ENERGY DRINK", effect: "dmgBonus", value: 2 },
 ];
 
 // Vendor scrolls
