@@ -367,7 +367,7 @@ export const MONSTERS = [
 export const WEAPONS = {
   1: [
     { names: ["Spectrum Rubber Key", "Frayed Cassette Ribbon"], dmg: [2, 4], short: "WIRE", chance: 60, family: "NONE" },
-    { names: ["Broken MSX Cartridge", "Amstrad Volume Knob"], dmg: [3, 5], short: "PIN", chance: 40, family: "CRIT" },
+    { names: ["Broken MSX Cartridge", "Amstrad Volume Knob"], dmg: [3, 5], short: "HARD", chance: 40, family: "CRIT" },
   ],
   2: [
     { names: ["Broken MSX Cartridge", "Amstrad Volume Knob"], dmg: [3, 5], short: "PIN", chance: 35, family: "CRIT" },
@@ -379,7 +379,7 @@ export const WEAPONS = {
     { names: ["Z80 RAM Stick", "AY-3-8912 Chip"], dmg: [5, 7], short: "CHIP", chance: 30, family: "NONE" },
     { names: ["Amstrad 3-inch Disk", "MSX Floppy Shard"], dmg: [6, 9], short: "DISK", chance: 35, family: "NONE" },
     { names: ["Sinclair Power Brick", "CPC Monitor Brick"], dmg: [7, 10], short: "BRCK", chance: 25, family: "KNOCKBACK" },
-    { names: ["Spectrum Edge Connector", "MSX Slot Cleaner"], dmg: [8, 12], short: "IRON", chance: 10, family: "NONE" },
+    { names: ["Spectrum Edge Connector", "MSX Slot Cleaner"], dmg: [8, 12], short: "SLOT", chance: 10, family: "NONE" },
   ],
   4: [
     { names: ["Amstrad 3-inch Disk", "MSX Floppy Shard"], dmg: [7, 10], short: "DISK", chance: 25, family: "NONE" },
