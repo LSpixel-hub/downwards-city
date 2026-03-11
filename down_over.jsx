@@ -165,7 +165,6 @@ function DownwardsNeon() {
     useState(false);
   const [surfaceDefenseSourceLevel, setSurfaceDefenseSourceLevel] =
     useState(null);
-  const [surfaceCorruptionStage, setSurfaceCorruptionStage] = useState(0);
   const [floorsWithoutSurfaceDefense, setFloorsWithoutSurfaceDefense] =
     useState(0);
 
@@ -269,7 +268,6 @@ function DownwardsNeon() {
   const surfaceDefenseActiveRef = useLatest(surfaceDefenseActive);
   const surfaceDefenseReadyToReturnRef = useLatest(surfaceDefenseReadyToReturn);
   const surfaceDefenseSourceLevelRef = useLatest(surfaceDefenseSourceLevel);
-  const surfaceCorruptionStageRef = useLatest(surfaceCorruptionStage);
   const floorsWithoutSurfaceDefenseRef = useLatest(floorsWithoutSurfaceDefense);
   const teleporter1Ref = useLatest(teleporter1);
   const teleporter2Ref = useLatest(teleporter2);
@@ -906,7 +904,6 @@ function DownwardsNeon() {
     setSurfaceDefenseActive(false);
     setSurfaceDefenseReadyToReturn(false);
     setSurfaceDefenseSourceLevel(null);
-    setSurfaceCorruptionStage(0);
     setFloorsWithoutSurfaceDefense(0);
 
     // Tout réinitialiser comme startGame, mais level=0
@@ -1011,7 +1008,6 @@ function DownwardsNeon() {
     setSurfaceDefenseActive(false);
     setSurfaceDefenseReadyToReturn(false);
     setSurfaceDefenseSourceLevel(null);
-    setSurfaceCorruptionStage(0);
     setFloorsWithoutSurfaceDefense(0);
 
     effectTimersRef.current.forEach((t) => clearTimeout(t));
@@ -3855,46 +3851,9 @@ function DownwardsNeon() {
     return Math.random() < 0.05;
   }, [floorsWithoutSurfaceDefenseRef]);
 
-  const getSurfaceCorruptionStage = useCallback((sourceLevel) => {
-    if (sourceLevel >= 36) return 3;
-    if (sourceLevel >= 21) return 2;
-    if (sourceLevel >= 10) return 1;
-    return 0;
-  }, []);
-
-  const convertOverworldTileToDungeon = useCallback((owTile, corruptionStage) => {
-    switch (owTile) {
-      case OW_TILE.VOID:
-      case OW_TILE.SKY:
-      case OW_TILE.STAR:
-      case OW_TILE.BUILDING:
-      case OW_TILE.LIT_WINDOW:
-      case OW_TILE.NEON_SIGN:
-      case OW_TILE.WATER:
-      case OW_TILE.WALL_DETAIL:
-      case OW_TILE.RAILING:
-      case OW_TILE.AWNING:
-      case OW_TILE.VENDING:
-      case OW_TILE.AC_UNIT:
-        return TILE.VOID;
-      case OW_TILE.STREET:
-      case OW_TILE.STREETLIGHT:
-      case OW_TILE.DOOR:
-      case OW_TILE.SAND:
-        return TILE.CORRIDOR;
-      case OW_TILE.PUDDLE:
-        return corruptionStage >= 2 ? TILE.VOID_FLUX : TILE.CORRIDOR;
-      case OW_TILE.STAIRS:
-        return TILE.STAIRS;
-      default:
-        return TILE.VOID;
-    }
-  }, []);
-
   const enterSurfaceDefense = useCallback(
     (sourceLevel) => {
       const ow = generateOverworld();
-      const corruptionStage = getSurfaceCorruptionStage(sourceLevel);
       const shiftedRawMap = Array(GRID_HEIGHT + 1)
         .fill(null)
         .map(() => Array(GRID_WIDTH + 1).fill(OW_TILE.VOID));
@@ -3909,7 +3868,7 @@ function DownwardsNeon() {
       }
 
       const dungeonMap = shiftedRawMap.map((row) =>
-        row.map((t) => convertOverworldTileToDungeon(t, corruptionStage))
+        row.map((t) => OW_TO_DUNGEON[t] ?? TILE.VOID)
       );
       const playerPos = { x: ow.playerPos.x + 1, y: ow.playerPos.y + 1 };
 
@@ -3940,7 +3899,6 @@ function DownwardsNeon() {
       setSurfaceDefenseActive(true);
       setSurfaceDefenseReadyToReturn(false);
       setSurfaceDefenseSourceLevel(sourceLevel);
-      setSurfaceCorruptionStage(corruptionStage);
       setLevel(0);
       setMap(dungeonMap);
       setOverworldRawMap(shiftedRawMap);
@@ -3959,29 +3917,8 @@ function DownwardsNeon() {
       }
       setRevealedZones(allZones);
       showMessage("⚠ SURGE DETECTED — DEFEND BETTIE'S APARTMENT ⚠", NEON.cyan, 4200);
-      if (corruptionStage >= 3) {
-        setTimeout(
-          () =>
-            showMessage(
-              "⚠ KERNAL OVERRIDE — REALITY COLLAPSE ⚠",
-              NEON.red,
-              2600
-            ),
-          700
-        );
-      } else if (corruptionStage >= 2) {
-        setTimeout(
-          () => showMessage("⚠ MEMORY LEAK ON SURFACE ⚠", NEON.magenta, 2200),
-          700
-        );
-      } else if (corruptionStage >= 1) {
-        setTimeout(
-          () => showMessage("⚠ SYSTEM INFECTION DETECTED ⚠", NEON.orange, 2200),
-          700
-        );
-      }
     },
-    [convertOverworldTileToDungeon, getSurfaceCorruptionStage, showMessage]
+    [OW_TO_DUNGEON, showMessage]
   );
 
   const returnToDungeonAfterSurfaceDefense = useCallback(() => {
@@ -4046,7 +3983,6 @@ function DownwardsNeon() {
     setSurfaceDefenseActive(false);
     setSurfaceDefenseReadyToReturn(false);
     setSurfaceDefenseSourceLevel(null);
-    setSurfaceCorruptionStage(0);
     setFloorsWithoutSurfaceDefense(0);
     setPendingScroll(true);
     showMessage("◆ SURFACE SECURED — DESCENDING DEEPER ◆", NEON.cyan, 3200);
