@@ -60,6 +60,15 @@ export const TILE = {
   OVERLOAD_KEY: 23,
 };
 
+// Direction constants
+export const CARDINAL_DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+export const ALL_DIRS = [[0, -1], [0, 1], [-1, 0], [1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]];
+
+// Corridor dash tile sets (constant, no need to recreate per call)
+export const DASH_AUTO_PICKUP = new Set([TILE.GOLD, TILE.KEY]);
+export const DASH_STOP_BEFORE = new Set([TILE.WEAPON, TILE.ARMOR, TILE.VENDOR, TILE.BOW]);
+export const DASH_STOP_AFTER = new Set([TILE.POTION, TILE.SCROLL, TILE.GEM, TILE.TELEPORTER, TILE.PRINCESS, TILE.STAIRS, TILE.VAULT_STAIRS]);
+
 // Helper functions
 export const getZone = (x, y) => {
   if (x < 1 || y < 1) return 0;
@@ -150,16 +159,7 @@ export const findPath = (
   while (head < queue.length) {
     const cx = queue[head++];
     const cy = queue[head++];
-    for (const [dx, dy] of [
-      [0, -1],
-      [0, 1],
-      [-1, 0],
-      [1, 0],
-      [-1, -1],
-      [1, -1],
-      [-1, 1],
-      [1, 1],
-    ]) {
+    for (const [dx, dy] of ALL_DIRS) {
       const nx = cx + dx;
       const ny = cy + dy;
       if (nx < 1 || nx > GRID_WIDTH || ny < 1 || ny > GRID_HEIGHT) continue;
