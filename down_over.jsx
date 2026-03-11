@@ -839,7 +839,6 @@ function DownwardsNeon() {
       [OW_TILE.STREETLIGHT]: TILE.CORRIDOR,
       [OW_TILE.STAIRS]: TILE.STAIRS,
       [OW_TILE.WATER]: TILE.VOID,
-      [OW_TILE.PROMENADE]: TILE.FLOOR,
     }),
     []
   );
@@ -848,14 +847,31 @@ function DownwardsNeon() {
   const enterOverworld = useCallback(() => {
     const ow = generateOverworld();
 
+    // Overworld generator is 0-based; the dungeon engine expects a 1-based grid.
+    // Re-map all overworld arrays so indices [1..GRID_WIDTH][1..GRID_HEIGHT] are valid.
+    const shiftedRawMap = Array(GRID_HEIGHT + 1)
+      .fill(null)
+      .map(() => Array(GRID_WIDTH + 1).fill(OW_TILE.VOID));
+    for (let y = 0; y < ow.map.length; y++) {
+      const row = ow.map[y] || [];
+      for (let x = 0; x < row.length; x++) {
+        shiftedRawMap[y + 1][x + 1] = row[x];
+      }
+    }
+
+    const shiftedCoastLine = Array(GRID_WIDTH + 1).fill(GRID_HEIGHT);
+    for (let x = 0; x < ow.coastLine.length; x++) {
+      shiftedCoastLine[x + 1] = ow.coastLine[x] + 1;
+    }
+
     // Convertir la map overworld en tile IDs dungeon pour le moteur de jeu
-    const dungeonMap = ow.map.map((row) =>
+    const dungeonMap = shiftedRawMap.map((row) =>
       row.map((t) => OW_TO_DUNGEON[t] ?? TILE.VOID)
     );
 
     // Garder la map brute pour le rendu overworld
-    setOverworldRawMap(ow.map);
-    setOverworldCoastLine(ow.coastLine);
+    setOverworldRawMap(shiftedRawMap);
+    setOverworldCoastLine(shiftedCoastLine);
     setOverworldTick(0);
 
     // Tout réinitialiser comme startGame, mais level=0
@@ -913,10 +929,10 @@ function DownwardsNeon() {
 
     // Injecter la map convertie dans le moteur de jeu
     setMap(dungeonMap);
-    setPlayer(ow.playerPos);
-    setStairsPos(ow.stairsPos);
-    setTeleporter1(null);
-    setTeleporter2(null);
+    setPlayer({ x: ow.playerPos.x + 1, y: ow.playerPos.y + 1 });
+    setStairsPos({ x: ow.stairsPos.x + 1, y: ow.stairsPos.y + 1 });
+    setTeleporter1({ x: 0, y: 0, active: false });
+    setTeleporter2({ x: 0, y: 0, active: false });
     setMonsters([]);
     setFloorObjective(null);
     setKeyNeeded(false);
