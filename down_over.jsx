@@ -167,6 +167,7 @@ function DownwardsNeon() {
     useState(null);
   const [floorsWithoutSurfaceDefense, setFloorsWithoutSurfaceDefense] =
     useState(0);
+  const [surfaceCorruptionStage, setSurfaceCorruptionStage] = useState(0);
 
   // ======== A3 : message + color fusionnés en un seul state (1 render au lieu de 2) ========
   const [msg, setMsg] = useState({ text: "", color: NEON.white });
@@ -268,6 +269,7 @@ function DownwardsNeon() {
   const surfaceDefenseActiveRef = useLatest(surfaceDefenseActive);
   const surfaceDefenseReadyToReturnRef = useLatest(surfaceDefenseReadyToReturn);
   const surfaceDefenseSourceLevelRef = useLatest(surfaceDefenseSourceLevel);
+  const surfaceCorruptionStageRef = useLatest(surfaceCorruptionStage);
   const floorsWithoutSurfaceDefenseRef = useLatest(floorsWithoutSurfaceDefense);
   const teleporter1Ref = useLatest(teleporter1);
   const teleporter2Ref = useLatest(teleporter2);
@@ -558,6 +560,51 @@ function DownwardsNeon() {
     },
     [spawnEffect]
   );
+
+  const applyPotionEffect = useCallback(
+    (potion, x, y, contextLabel = null) => {
+      if (!potion) return;
+
+      if (typeof x === "number" && typeof y === "number") {
+        spawnEffect(x, y, "!", NEON.cyan, 300);
+      }
+
+      const prefix = contextLabel ? `◆ ${contextLabel} ◆ ` : "◆ ";
+      if (potion.effect === "hp") {
+        setHp((currentHp) => Math.min(currentHp + potion.value, maxHpRef.current));
+        if (typeof x === "number" && typeof y === "number") spawnHealEffect(x, y);
+        showMessage(`${prefix}${potion.name} +${potion.value} HP ◆`, NEON.cyan);
+      } else if (potion.effect === "maxHp") {
+        setMaxHp((m) => m + potion.value);
+        setHp(maxHpRef.current + potion.value);
+        if (typeof x === "number" && typeof y === "number") spawnHealEffect(x, y);
+        showMessage(
+          `${prefix}${potion.name} +${potion.value} MAX HP & FULL HEAL ◆`,
+          NEON.cyan
+        );
+      } else if (potion.effect === "armor") {
+        setArmorPermanent((a) => a + potion.value);
+        showMessage(
+          `${prefix}${potion.name} +${potion.value} ARMOR (PERMANENT) ◆`,
+          NEON.cyan
+        );
+      } else if (potion.effect === "dmgBonus") {
+        setDmgBonus((d) => d + potion.value);
+        showMessage(
+          `${prefix}${potion.name} +${potion.value} DMG (PERMANENT) ◆`,
+          NEON.cyan
+        );
+      }
+    },
+    [showMessage, spawnEffect, spawnHealEffect]
+  );
+
+  const getSurfaceCorruptionStage = useCallback((sourceLevel) => {
+    if (sourceLevel >= 36) return 3;
+    if (sourceLevel >= 21) return 2;
+    if (sourceLevel >= 10) return 1;
+    return 0;
+  }, []);
 
   const getInitialMapZoom = useCallback(() => 1, []);
 
@@ -1687,8 +1734,9 @@ function DownwardsNeon() {
       const pPos = playerPos || playerRef.current;
       const _level = levelRef.current;
 
-      // Overworld (level 0) : pas de monstres
-      if (_level === 0) return;
+      // Overworld prologue (level 0) : pas de monstres,
+      // mais en surface defense les monstres doivent jouer normalement.
+      if (_level === 0 && !surfaceDefenseActiveRef.current) return;
 
       const _armor = armorRef.current;
       const _map = mapRef.current;
@@ -2628,27 +2676,8 @@ function DownwardsNeon() {
         }
       }
       if (tile === TILE.POTION) {
-        const p = POTIONS[Math.floor(Math.random() * 4)];
-        spawnEffect(nx, ny, "!", NEON.cyan, 300);
-        if (p.effect === "hp") {
-          setHp((currentHp) => Math.min(currentHp + p.value, maxHpRef.current));
-          spawnHealEffect(nx, ny);
-          showMessage(`◆ ${p.name} +${p.value} HP ◆`, NEON.cyan);
-        } else if (p.effect === "maxHp") {
-          setMaxHp((m) => m + p.value);
-          setHp(maxHpRef.current + p.value);
-          spawnHealEffect(nx, ny);
-          showMessage(
-            `◆ ${p.name} +${p.value} MAX HP & FULL HEAL ◆`,
-            NEON.cyan
-          );
-        } else if (p.effect === "armor") {
-          setArmorPermanent((a) => a + p.value);
-          showMessage(`◆ ${p.name} +${p.value} ARMOR (PERMANENT) ◆`, NEON.cyan);
-        } else if (p.effect === "dmgBonus") {
-          setDmgBonus((d) => d + p.value);
-          showMessage(`◆ ${p.name} +${p.value} DMG (PERMANENT) ◆`, NEON.cyan);
-        }
+        const p = POTIONS[Math.floor(Math.random() * POTIONS.length)];
+        applyPotionEffect(p, nx, ny);
         newMap[ny][nx] = TILE.FLOOR;
       }
       if (tile === TILE.SCROLL) {
@@ -2836,13 +2865,13 @@ function DownwardsNeon() {
       processMonsterTurn(_monsters, justRevealedZone, newPlayerPos);
     },
     [
+      applyPotionEffect,
       applyTerrainToMonster,
       getDamage,
       processMonsterTurn,
       showMessage,
       spawnDeathEffect,
       spawnEffect,
-      spawnHealEffect,
     ]
   );
 
@@ -3446,7 +3475,7 @@ function DownwardsNeon() {
         });
       }
     }
-  }, [showMessage]);
+  }, [showMessage, surfaceDefenseActiveRef]);
 
   const useStairs = useCallback(() => {
     const _player = playerRef.current;
@@ -3899,6 +3928,7 @@ function DownwardsNeon() {
       setSurfaceDefenseActive(true);
       setSurfaceDefenseReadyToReturn(false);
       setSurfaceDefenseSourceLevel(sourceLevel);
+      setSurfaceCorruptionStage(getSurfaceCorruptionStage(sourceLevel));
       setLevel(0);
       setMap(dungeonMap);
       setOverworldRawMap(shiftedRawMap);
@@ -3918,7 +3948,7 @@ function DownwardsNeon() {
       setRevealedZones(allZones);
       showMessage("⚠ SURGE DETECTED — DEFEND BETTIE'S APARTMENT ⚠", NEON.cyan, 4200);
     },
-    [OW_TO_DUNGEON, showMessage]
+    [OW_TO_DUNGEON, getSurfaceCorruptionStage, showMessage]
   );
 
   const returnToDungeonAfterSurfaceDefense = useCallback(() => {
@@ -3980,6 +4010,7 @@ function DownwardsNeon() {
       new Set([getZone(levelData.playerPos.x, levelData.playerPos.y)])
     );
     setOverworldRawMap(null);
+    setSurfaceCorruptionStage(0);
     setSurfaceDefenseActive(false);
     setSurfaceDefenseReadyToReturn(false);
     setSurfaceDefenseSourceLevel(null);
@@ -4001,17 +4032,18 @@ function DownwardsNeon() {
     const rewardWeapon = getWeaponForLevel(
       Math.max(1, surfaceDefenseSourceLevelRef.current || 1)
     );
+    const rewardPotion = POTIONS[Math.floor(Math.random() * POTIONS.length)];
+    applyPotionEffect(rewardPotion, null, null, "APARTMENT SECURED");
     setHasWeapon(true);
     setWeapon(rewardWeapon);
-    const healAmount = 6;
-    setHp((currentHp) => Math.min(maxHpRef.current, currentHp + healAmount));
     setSurfaceDefenseReadyToReturn(true);
     showMessage(
-      `◆ APARTMENT SECURED ◆ +${healAmount} HP + ${rewardWeapon.short}`,
+      `◆ APARTMENT SECURED ◆ WEAPON ACQUIRED: ${rewardWeapon.short}`,
       NEON.green,
       4200
     );
   }, [
+    applyPotionEffect,
     level,
     monsters,
     surfaceDefenseActive,
@@ -4332,27 +4364,8 @@ function DownwardsNeon() {
       }
       // === Phase 5 : Interaction tile d'arrivée ===
       if (stopTile === TILE.POTION) {
-        const p = POTIONS[Math.floor(Math.random() * 4)];
-        spawnEffect(finalPos.x, finalPos.y, "!", NEON.cyan, 300);
-        if (p.effect === "hp") {
-          setHp((h) => Math.min(h + p.value, maxHpRef.current));
-          spawnHealEffect(finalPos.x, finalPos.y);
-          showMessage(`◆ ${p.name} +${p.value} HP ◆`, NEON.cyan);
-        } else if (p.effect === "maxHp") {
-          setMaxHp((m) => m + p.value);
-          setHp(maxHpRef.current + p.value);
-          spawnHealEffect(finalPos.x, finalPos.y);
-          showMessage(
-            `◆ ${p.name} +${p.value} MAX HP & FULL HEAL ◆`,
-            NEON.cyan
-          );
-        } else if (p.effect === "armor") {
-          setArmorPermanent((a) => a + p.value);
-          showMessage(`◆ ${p.name} +${p.value} ARMOR (PERMANENT) ◆`, NEON.cyan);
-        } else if (p.effect === "dmgBonus") {
-          setDmgBonus((d) => d + p.value);
-          showMessage(`◆ ${p.name} +${p.value} DMG (PERMANENT) ◆`, NEON.cyan);
-        }
+        const p = POTIONS[Math.floor(Math.random() * POTIONS.length)];
+        applyPotionEffect(p, finalPos.x, finalPos.y);
         newMap[finalPos.y][finalPos.x] = TILE.FLOOR;
       }
       if (stopTile === TILE.SCROLL) {
@@ -4457,11 +4470,11 @@ function DownwardsNeon() {
       );
     },
     [
+      applyPotionEffect,
       processMonsterTurn,
       registerDashHitForCombo,
       showMessage,
       spawnEffect,
-      spawnHealEffect,
       spawnDeathEffect,
       triggerShake,
     ]
