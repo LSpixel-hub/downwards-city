@@ -1462,9 +1462,7 @@ function DownwardsNeon() {
       }
 
       if (!goingToVault) {
-        setFloorsWithoutSurfaceDefense((count) =>
-          spawnBlueAccess ? 0 : count + 1
-        );
+        setFloorsWithoutSurfaceDefense((count) => count + 1);
       }
 
       setMap(levelData.map);
@@ -3506,6 +3504,8 @@ function DownwardsNeon() {
     }
 
     if (currentTile === TILE.BLUE_STAIRS) {
+      resolveFloorObjective();
+      setFloorsWithoutSurfaceDefense(0);
       enterSurfaceDefenseRef.current(levelRef.current);
       return;
     }
@@ -4035,7 +4035,8 @@ function DownwardsNeon() {
     const rewardPotion = POTIONS[Math.floor(Math.random() * POTIONS.length)];
     applyPotionEffect(rewardPotion, null, null, "APARTMENT SECURED");
     setHasWeapon(true);
-    setWeapon(rewardWeapon);
+    setPendingWeapon(rewardWeapon);
+    setShowConfirm({ type: "weapon", data: rewardWeapon });
     setSurfaceDefenseReadyToReturn(true);
     showMessage(
       `◆ APARTMENT SECURED ◆ WEAPON ACQUIRED: ${rewardWeapon.short}`,
