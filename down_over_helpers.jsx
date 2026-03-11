@@ -58,6 +58,7 @@ export const TILE = {
   BARREL: 21,
   BLOOD_ALTAR: 22,
   OVERLOAD_KEY: 23,
+  BLUE_STAIRS: 24,
 };
 
 // Direction constants
@@ -67,7 +68,7 @@ export const ALL_DIRS = [[0, -1], [0, 1], [-1, 0], [1, 0], [-1, -1], [1, -1], [-
 // Corridor dash tile sets (constant, no need to recreate per call)
 export const DASH_AUTO_PICKUP = new Set([TILE.GOLD, TILE.KEY]);
 export const DASH_STOP_BEFORE = new Set([TILE.WEAPON, TILE.ARMOR, TILE.VENDOR, TILE.BOW]);
-export const DASH_STOP_AFTER = new Set([TILE.POTION, TILE.SCROLL, TILE.GEM, TILE.TELEPORTER, TILE.PRINCESS, TILE.STAIRS, TILE.VAULT_STAIRS]);
+export const DASH_STOP_AFTER = new Set([TILE.POTION, TILE.SCROLL, TILE.GEM, TILE.TELEPORTER, TILE.PRINCESS, TILE.STAIRS, TILE.VAULT_STAIRS, TILE.BLUE_STAIRS]);
 
 // Helper functions
 export const getZone = (x, y) => {
@@ -128,6 +129,7 @@ export const WALKABLE_TILES = new Set([
   TILE.VOID_FLUX,
   TILE.BLOOD_ALTAR,
   TILE.OVERLOAD_KEY,
+  TILE.BLUE_STAIRS,
 ]);
 
 export const isWalkable = (tile) => WALKABLE_TILES.has(tile);
@@ -291,6 +293,13 @@ export const renderTileData = (tile, biome, gemColor) => {
         color: NEON.magenta,
         glow: glowStyle(NEON.magenta),
         flash: false,
+      };
+    case TILE.BLUE_STAIRS:
+      return {
+        char: "▼",
+        color: NEON.cyan,
+        glow: glowStyle(NEON.cyan, 1.8),
+        flash: true,
       };
     case TILE.TELEPORTER:
       return {

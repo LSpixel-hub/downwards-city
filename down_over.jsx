@@ -160,6 +160,14 @@ function DownwardsNeon() {
   const [overworldRawMap, setOverworldRawMap] = useState(null); // raw overworld tile IDs for rendering
   const [overworldCoastLine, setOverworldCoastLine] = useState([]);
   const [overworldTick, setOverworldTick] = useState(0);
+  const [surfaceDefenseActive, setSurfaceDefenseActive] = useState(false);
+  const [surfaceDefenseReadyToReturn, setSurfaceDefenseReadyToReturn] =
+    useState(false);
+  const [surfaceDefenseSourceLevel, setSurfaceDefenseSourceLevel] =
+    useState(null);
+  const [surfaceCorruptionStage, setSurfaceCorruptionStage] = useState(0);
+  const [floorsWithoutSurfaceDefense, setFloorsWithoutSurfaceDefense] =
+    useState(0);
 
   // ======== A3 : message + color fusionnés en un seul state (1 render au lieu de 2) ========
   const [msg, setMsg] = useState({ text: "", color: NEON.white });
@@ -258,6 +266,11 @@ function DownwardsNeon() {
   const pendingArmorRef = useLatest(pendingArmor);
   const pendingBowRef = useLatest(pendingBow);
   const vendorScrollRef = useLatest(vendorScroll);
+  const surfaceDefenseActiveRef = useLatest(surfaceDefenseActive);
+  const surfaceDefenseReadyToReturnRef = useLatest(surfaceDefenseReadyToReturn);
+  const surfaceDefenseSourceLevelRef = useLatest(surfaceDefenseSourceLevel);
+  const surfaceCorruptionStageRef = useLatest(surfaceCorruptionStage);
+  const floorsWithoutSurfaceDefenseRef = useLatest(floorsWithoutSurfaceDefense);
   const teleporter1Ref = useLatest(teleporter1);
   const teleporter2Ref = useLatest(teleporter2);
   const stairsPosRef = useLatest(stairsPos);
@@ -305,6 +318,9 @@ function DownwardsNeon() {
   const handleVendorConfirmRef = useRef(null);
   const startGameRef = useRef(null);
   const enterOverworldRef = useRef(null);
+  const maybeSpawnSurfaceDefenseAccessRef = useRef(() => false);
+  const enterSurfaceDefenseRef = useRef(null);
+  const returnToDungeonAfterSurfaceDefenseRef = useRef(null);
   const processMonsterTurnRef = useRef(null);
   const corridorDashRef = useRef(null);
 
@@ -548,7 +564,13 @@ function DownwardsNeon() {
   const getInitialMapZoom = useCallback(() => 1, []);
 
   const generateLevel = useCallback(
-    (lvl, currentUnlockedGems, badgeCount = 0, overloadKeyBoost = false) => {
+    (
+      lvl,
+      currentUnlockedGems,
+      badgeCount = 0,
+      overloadKeyBoost = false,
+      shouldSpawnBlueAccess = false
+    ) => {
       const newMap = Array(GRID_HEIGHT + 1)
         .fill(null)
         .map(() => Array(GRID_WIDTH + 1).fill(TILE.VOID));
@@ -651,6 +673,13 @@ function DownwardsNeon() {
           : isVaultStairs
           ? TILE.VAULT_STAIRS
           : TILE.STAIRS;
+
+      let blueStairsPos = null;
+      if (shouldSpawnBlueAccess && lvl < 50) {
+        blueStairsPos = getValidTile(allPlaced);
+        allPlaced.push(blueStairsPos);
+        newMap[blueStairsPos.y][blueStairsPos.x] = TILE.BLUE_STAIRS;
+      }
 
       const tp1 = getValidTile(allPlaced);
       allPlaced.push(tp1);
@@ -823,6 +852,7 @@ function DownwardsNeon() {
         bowData,
         gemData,
         totalZones: reachableZones.size,
+        blueStairsPos,
       };
     },
     []
@@ -873,6 +903,11 @@ function DownwardsNeon() {
     setOverworldRawMap(shiftedRawMap);
     setOverworldCoastLine(shiftedCoastLine);
     setOverworldTick(0);
+    setSurfaceDefenseActive(false);
+    setSurfaceDefenseReadyToReturn(false);
+    setSurfaceDefenseSourceLevel(null);
+    setSurfaceCorruptionStage(0);
+    setFloorsWithoutSurfaceDefense(0);
 
     // Tout réinitialiser comme startGame, mais level=0
     effectTimersRef.current.forEach((t) => clearTimeout(t));
@@ -973,6 +1008,11 @@ function DownwardsNeon() {
 
     // Clear overworld state
     setOverworldRawMap(null);
+    setSurfaceDefenseActive(false);
+    setSurfaceDefenseReadyToReturn(false);
+    setSurfaceDefenseSourceLevel(null);
+    setSurfaceCorruptionStage(0);
+    setFloorsWithoutSurfaceDefense(0);
 
     effectTimersRef.current.forEach((t) => clearTimeout(t));
     effectTimersRef.current.clear();
@@ -1027,7 +1067,7 @@ function DownwardsNeon() {
     resetGoldTrackingRef.current = true;
     resetZoneTrackingRef.current = true;
 
-    const levelData = generateLevel(1, freshUnlockedGems, 0);
+    const levelData = generateLevel(1, freshUnlockedGems, 0, false, false);
 
     setMap(levelData.map);
     setPlayer(levelData.playerPos);
@@ -1350,6 +1390,9 @@ function DownwardsNeon() {
       deathInProgressRef.current = false;
 
       let levelData;
+      const spawnBlueAccess = !goingToVault
+        ? maybeSpawnSurfaceDefenseAccessRef.current(newLevel)
+        : false;
 
       if (goingToVault) {
         // Entrer dans la vault
@@ -1370,7 +1413,14 @@ function DownwardsNeon() {
           newLevel,
           unlockedGemsRef.current,
           earnedBadgesRef.current.length,
-          overloadKeyActive
+          overloadKeyActive,
+          spawnBlueAccess
+        );
+      }
+
+      if (!goingToVault) {
+        setFloorsWithoutSurfaceDefense((count) =>
+          spawnBlueAccess ? 0 : count + 1
         );
       }
 
@@ -2547,9 +2597,14 @@ function DownwardsNeon() {
       // Overworld (level 0) : hint quand on marche sur l'escalier
       if (levelRef.current === 0 && tile === TILE.STAIRS) {
         showMessage(
-          "◆ DUNGEON ENTRANCE — PRESS S TO ENTER ◆",
+          surfaceDefenseActiveRef.current
+            ? "◆ EXTRACTION POINT — PRESS S TO RETURN ◆"
+            : "◆ DUNGEON ENTRANCE — PRESS S TO ENTER ◆",
           OW_PALETTE.neonMagenta
         );
+      }
+      if (tile === TILE.BLUE_STAIRS) {
+        showMessage("◆ SURFACE BREACH — PRESS S TO DEFEND ◆", NEON.cyan, 2600);
       }
 
       const newMap = [..._map];
@@ -3402,14 +3457,31 @@ function DownwardsNeon() {
     const _stairsPos = stairsPosRef.current;
     const currentTile = mapRef.current[_player.y]?.[_player.x];
     const isOnStairs =
-      currentTile === TILE.STAIRS || currentTile === TILE.VAULT_STAIRS;
-    if (_player.x !== _stairsPos.x || _player.y !== _stairsPos.y || !isOnStairs)
+      currentTile === TILE.STAIRS ||
+      currentTile === TILE.VAULT_STAIRS ||
+      currentTile === TILE.BLUE_STAIRS;
+    const isMainStairs = _player.x === _stairsPos.x && _player.y === _stairsPos.y;
+    if (!isOnStairs) return;
+    if (currentTile !== TILE.BLUE_STAIRS && !isMainStairs)
       return;
 
     // Overworld (level 0) → lancer le vrai jeu au niveau 1
     if (levelRef.current === 0) {
+      if (surfaceDefenseActiveRef.current) {
+        if (!surfaceDefenseReadyToReturnRef.current) {
+          showMessage("◇ CLEAR THE CITY FIRST ◇", NEON.orange, 2200);
+          return;
+        }
+        returnToDungeonAfterSurfaceDefenseRef.current();
+        return;
+      }
       showMessage("◆ ENTERING THE DUNGEON... ◆", OW_PALETTE.neonMagenta);
       setTimeout(() => startGameRef.current(), 600);
+      return;
+    }
+
+    if (currentTile === TILE.BLUE_STAIRS) {
+      enterSurfaceDefenseRef.current(levelRef.current);
       return;
     }
 
@@ -3777,6 +3849,241 @@ function DownwardsNeon() {
     [showMessage, spawnEffect]
   );
 
+  const maybeSpawnSurfaceDefenseAccess = useCallback((lvl) => {
+    if (lvl < 10) return false;
+    if (floorsWithoutSurfaceDefenseRef.current >= 8) return true;
+    return Math.random() < 0.05;
+  }, [floorsWithoutSurfaceDefenseRef]);
+
+  const getSurfaceCorruptionStage = useCallback((sourceLevel) => {
+    if (sourceLevel >= 36) return 3;
+    if (sourceLevel >= 21) return 2;
+    if (sourceLevel >= 10) return 1;
+    return 0;
+  }, []);
+
+  const convertOverworldTileToDungeon = useCallback((owTile, corruptionStage) => {
+    switch (owTile) {
+      case OW_TILE.VOID:
+      case OW_TILE.SKY:
+      case OW_TILE.STAR:
+      case OW_TILE.BUILDING:
+      case OW_TILE.LIT_WINDOW:
+      case OW_TILE.NEON_SIGN:
+      case OW_TILE.WATER:
+      case OW_TILE.WALL_DETAIL:
+      case OW_TILE.RAILING:
+      case OW_TILE.AWNING:
+      case OW_TILE.VENDING:
+      case OW_TILE.AC_UNIT:
+        return TILE.VOID;
+      case OW_TILE.STREET:
+      case OW_TILE.STREETLIGHT:
+      case OW_TILE.DOOR:
+      case OW_TILE.SAND:
+        return TILE.CORRIDOR;
+      case OW_TILE.PUDDLE:
+        return corruptionStage >= 2 ? TILE.VOID_FLUX : TILE.CORRIDOR;
+      case OW_TILE.STAIRS:
+        return TILE.STAIRS;
+      default:
+        return TILE.VOID;
+    }
+  }, []);
+
+  const enterSurfaceDefense = useCallback(
+    (sourceLevel) => {
+      const ow = generateOverworld();
+      const corruptionStage = getSurfaceCorruptionStage(sourceLevel);
+      const shiftedRawMap = Array(GRID_HEIGHT + 1)
+        .fill(null)
+        .map(() => Array(GRID_WIDTH + 1).fill(OW_TILE.VOID));
+      for (let y = 0; y < ow.map.length; y++) {
+        const row = ow.map[y] || [];
+        for (let x = 0; x < row.length; x++) shiftedRawMap[y + 1][x + 1] = row[x];
+      }
+
+      const shiftedCoastLine = Array(GRID_WIDTH + 1).fill(GRID_HEIGHT);
+      for (let x = 0; x < ow.coastLine.length; x++) {
+        shiftedCoastLine[x + 1] = ow.coastLine[x] + 1;
+      }
+
+      const dungeonMap = shiftedRawMap.map((row) =>
+        row.map((t) => convertOverworldTileToDungeon(t, corruptionStage))
+      );
+      const playerPos = { x: ow.playerPos.x + 1, y: ow.playerPos.y + 1 };
+
+      const candidateTiles = [];
+      for (let y = 1; y <= GRID_HEIGHT; y++) {
+        for (let x = 1; x <= GRID_WIDTH; x++) {
+          if (dungeonMap[y]?.[x] !== TILE.CORRIDOR) continue;
+          const dist = Math.abs(x - playerPos.x) + Math.abs(y - playerPos.y);
+          if (dist >= 8) candidateTiles.push({ x, y });
+        }
+      }
+
+      const waveCount = Math.min(12, 3 + Math.floor(sourceLevel / 4));
+      const waveMonsters = [];
+      for (let i = 0; i < waveCount && candidateTiles.length > 0; i++) {
+        const idx = Math.floor(Math.random() * candidateTiles.length);
+        const pos = candidateTiles.splice(idx, 1)[0];
+        const monsterStats = getMonsterForLevel(sourceLevel);
+        waveMonsters.push({
+          ...monsterStats,
+          x: pos.x,
+          y: pos.y,
+          currentHp: monsterStats.hp,
+          zone: getZone(pos.x, pos.y),
+        });
+      }
+
+      setSurfaceDefenseActive(true);
+      setSurfaceDefenseReadyToReturn(false);
+      setSurfaceDefenseSourceLevel(sourceLevel);
+      setSurfaceCorruptionStage(corruptionStage);
+      setLevel(0);
+      setMap(dungeonMap);
+      setOverworldRawMap(shiftedRawMap);
+      setOverworldCoastLine(shiftedCoastLine);
+      setOverworldTick(0);
+      setPlayer(playerPos);
+      setStairsPos({ x: ow.stairsPos.x + 1, y: ow.stairsPos.y + 1 });
+      setTeleporter1({ x: 0, y: 0, active: false });
+      setTeleporter2({ x: 0, y: 0, active: false });
+      setMonsters(waveMonsters);
+      setPendingScroll(true);
+
+      const allZones = new Set();
+      for (let y = 1; y <= GRID_HEIGHT; y++) {
+        for (let x = 1; x <= GRID_WIDTH; x++) allZones.add(getZone(x, y));
+      }
+      setRevealedZones(allZones);
+      showMessage("⚠ SURGE DETECTED — DEFEND BETTIE'S APARTMENT ⚠", NEON.cyan, 4200);
+      if (corruptionStage >= 3) {
+        setTimeout(
+          () =>
+            showMessage(
+              "⚠ KERNAL OVERRIDE — REALITY COLLAPSE ⚠",
+              NEON.red,
+              2600
+            ),
+          700
+        );
+      } else if (corruptionStage >= 2) {
+        setTimeout(
+          () => showMessage("⚠ MEMORY LEAK ON SURFACE ⚠", NEON.magenta, 2200),
+          700
+        );
+      } else if (corruptionStage >= 1) {
+        setTimeout(
+          () => showMessage("⚠ SYSTEM INFECTION DETECTED ⚠", NEON.orange, 2200),
+          700
+        );
+      }
+    },
+    [convertOverworldTileToDungeon, getSurfaceCorruptionStage, showMessage]
+  );
+
+  const returnToDungeonAfterSurfaceDefense = useCallback(() => {
+    const sourceLevel = surfaceDefenseSourceLevelRef.current;
+    if (!sourceLevel) return;
+    const targetLevel = Math.min(50, sourceLevel + 1);
+    const levelData = generateLevel(
+      targetLevel,
+      unlockedGemsRef.current,
+      earnedBadgesRef.current.length,
+      false,
+      false
+    );
+
+    setLevel(targetLevel);
+    setHasKey(false);
+    setPrayerUsed(false);
+    setFloorTurns(0);
+    setPrayedThisFloor(false);
+    setKillsThisFloor(0);
+    setTerrainKillsThisFloor(0);
+    setDashedThisFloor(false);
+    setDamageTakenThisFloor(0);
+    setTeleportedThisFloor(false);
+    setClassSwitchedThisFloor(false);
+    setGoldCollectedThisFloor(0);
+    setZonesDiscoveredThisFloor(0);
+    setTrapsSteppedThisFloor(false);
+    setComboCount(0);
+    setOverdriveTurns(0);
+    setHasOverloadKey(false);
+    setFireTimers(new Map());
+    resetKillTrackingRef.current = true;
+    resetDamageTrackingRef.current = true;
+    resetGoldTrackingRef.current = true;
+    resetZoneTrackingRef.current = true;
+    deathInProgressRef.current = false;
+    setMap(levelData.map);
+    setPlayer(levelData.playerPos);
+    setStairsPos(levelData.stairsPos);
+    setTeleporter1(levelData.tp1);
+    setTeleporter2(levelData.tp2);
+    setMonsters(levelData.monsters);
+    setFloorObjective(
+      makeFloorObjective(
+        targetLevel,
+        false,
+        levelData.monsters.length,
+        levelData.totalZones
+      )
+    );
+    setKeyNeeded(levelData.needKey);
+    setVendorScroll(levelData.vendorData);
+    setPendingWeapon(levelData.weaponData);
+    setPendingArmor(levelData.armorData);
+    setPendingBow(levelData.bowData);
+    setGemOnMap(levelData.gemData);
+    setRevealedZones(
+      new Set([getZone(levelData.playerPos.x, levelData.playerPos.y)])
+    );
+    setOverworldRawMap(null);
+    setSurfaceDefenseActive(false);
+    setSurfaceDefenseReadyToReturn(false);
+    setSurfaceDefenseSourceLevel(null);
+    setSurfaceCorruptionStage(0);
+    setFloorsWithoutSurfaceDefense(0);
+    setPendingScroll(true);
+    showMessage("◆ SURFACE SECURED — DESCENDING DEEPER ◆", NEON.cyan, 3200);
+  }, [generateLevel, makeFloorObjective, showMessage, surfaceDefenseSourceLevelRef]);
+
+  useEffect(() => {
+    if (
+      !surfaceDefenseActive ||
+      level !== 0 ||
+      surfaceDefenseReadyToReturn ||
+      monsters.some((m) => m.currentHp > 0)
+    ) {
+      return;
+    }
+
+    const rewardWeapon = getWeaponForLevel(
+      Math.max(1, surfaceDefenseSourceLevelRef.current || 1)
+    );
+    setHasWeapon(true);
+    setWeapon(rewardWeapon);
+    const healAmount = 6;
+    setHp((currentHp) => Math.min(maxHpRef.current, currentHp + healAmount));
+    setSurfaceDefenseReadyToReturn(true);
+    showMessage(
+      `◆ APARTMENT SECURED ◆ +${healAmount} HP + ${rewardWeapon.short}`,
+      NEON.green,
+      4200
+    );
+  }, [
+    level,
+    monsters,
+    surfaceDefenseActive,
+    surfaceDefenseReadyToReturn,
+    surfaceDefenseSourceLevelRef,
+    showMessage,
+  ]);
+
   // ======== A1 : Les function refs restent pour le keydown handler (stable, []) ========
   movePlayerRef.current = movePlayer;
   useStairsRef.current = useStairs;
@@ -3791,6 +4098,10 @@ function DownwardsNeon() {
   handleVendorConfirmRef.current = handleVendorConfirm;
   startGameRef.current = startGame;
   enterOverworldRef.current = enterOverworld;
+  maybeSpawnSurfaceDefenseAccessRef.current = maybeSpawnSurfaceDefenseAccess;
+  enterSurfaceDefenseRef.current = enterSurfaceDefense;
+  returnToDungeonAfterSurfaceDefenseRef.current =
+    returnToDungeonAfterSurfaceDefense;
   processMonsterTurnRef.current = processMonsterTurn;
 
   // ======== BOSS VAULT : Auto-déblocage escalier quand tous les monstres sont morts ========
@@ -4187,7 +4498,11 @@ function DownwardsNeon() {
         newMap[finalPos.y][finalPos.x] = TILE.FLOOR;
         setGemOnMap(null);
       }
-      if (stopTile === TILE.STAIRS || stopTile === TILE.VAULT_STAIRS) {
+      if (
+        stopTile === TILE.STAIRS ||
+        stopTile === TILE.VAULT_STAIRS ||
+        stopTile === TILE.BLUE_STAIRS
+      ) {
         // Le joueur est sur l'escalier, il pourra appuyer sur DOWN
       }
       if (stopTile === TILE.PRINCESS) {
@@ -4724,7 +5039,9 @@ function DownwardsNeon() {
             realX,
             realY,
             overworldTick,
-            overworldCoastLine
+            overworldCoastLine,
+            [],
+            { corruptionStage: surfaceCorruptionStageRef.current }
           );
           // Escalier overworld : flash rapide pour être visible de loin
           const isStairs = overworldRawMap[realY]?.[realX] === OW_TILE.STAIRS;
@@ -4794,6 +5111,7 @@ function DownwardsNeon() {
     overworldRawMap,
     overworldTick,
     overworldCoastLine,
+    surfaceCorruptionStage,
   ]);
 
   const gridData = useMemo(() => {
@@ -5538,7 +5856,8 @@ function DownwardsNeon() {
                   action: useStairs,
                   active:
                     map[player.y]?.[player.x] === TILE.STAIRS ||
-                    map[player.y]?.[player.x] === TILE.VAULT_STAIRS,
+                    map[player.y]?.[player.x] === TILE.VAULT_STAIRS ||
+                    map[player.y]?.[player.x] === TILE.BLUE_STAIRS,
                   mobileOnly: false,
                   armed: false,
                 },
