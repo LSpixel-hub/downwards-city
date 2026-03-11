@@ -338,8 +338,10 @@ export const getTileRender = (
   y,
   tick = 0,
   coastLine = [],
-  starMap = []
+  starMap = [],
+  options = {}
 ) => {
+  const corruptionStage = options.corruptionStage || 0;
   const tile = map[y]?.[x];
   const ch = _charMap?.[y]?.[x] || " ";
   if (tile == null) return { char: " ", color: "#000" };
@@ -350,7 +352,13 @@ export const getTileRender = (
   switch (tile) {
     // ── CIEL & ÉTOILES ──────────
     case TILE.SKY: {
-      return { char: " ", color: currentSkyBg, bg: currentSkyBg };
+      const skyColor =
+        corruptionStage >= 2
+          ? PALETTE.sky2
+          : corruptionStage >= 1
+          ? PALETTE.sky1
+          : currentSkyBg;
+      return { char: " ", color: skyColor, bg: skyColor };
     }
     case TILE.STAR: {
       const wave = (Math.sin(tick * 0.08 + x * 2.7 + y * 4.1) + 1) / 2;
@@ -397,8 +405,11 @@ export const getTileRender = (
     // ── FENÊTRES ──────────────────────────────
     case TILE.LIT_WINDOW: {
       const cool = ch === "░" || (x * 3 + y * 7) % 5 === 0;
-      const c = cool ? PALETTE.windowCool : PALETTE.windowWarm;
+      let c = cool ? PALETTE.windowCool : PALETTE.windowWarm;
       const hash = (x * 131 + y * 97) % 100;
+      if (corruptionStage >= 1 && hash < 18) {
+        c = PALETTE.neonHotPink;
+      }
 
       if (hash < 12) {
         const cycle = Math.sin(tick * 0.02 + hash * 0.7);
@@ -510,6 +521,15 @@ export const getTileRender = (
       };
     }
     case TILE.PUDDLE: {
+      if (corruptionStage >= 2) {
+        return {
+          char: "%",
+          color: PALETTE.neonMagenta,
+          bg: PALETTE.streetDark,
+          opacity: 0.55,
+          glow: `0 0 7px ${PALETTE.neonMagenta}66`,
+        };
+      }
       const reflectColor = getAdjacentNeonColor(map, x, y);
       const p = Math.sin(tick * 0.1 + x * 1.5);
       return {
@@ -545,6 +565,20 @@ export const getTileRender = (
       const isWater = y >= dynamicShoreY;
 
       if (isWater) {
+        if (corruptionStage >= 3) {
+          const glitchChars = ["0", "1", "A", "F", "X"];
+          const gi = Math.abs((x * 11 + y * 5 + tick) % glitchChars.length);
+          return {
+            char: glitchChars[gi],
+            color:
+              (x + y + tick) % 2 === 0
+                ? PALETTE.neonGreen
+                : PALETTE.neonHotPink,
+            opacity: 0.8,
+            glow: `0 0 6px ${PALETTE.neonHotPink}55`,
+            animClass: `wave-${(x + y) % 3}`,
+          };
+        }
         // === RENDU EAU ===
         const wavePhase = Math.sin(tick * 0.08 + x * 0.15 + y * 0.3);
         const waveOffset = Math.floor((wavePhase + 1) * 2);

@@ -4975,7 +4975,9 @@ function DownwardsNeon() {
             realX,
             realY,
             overworldTick,
-            overworldCoastLine
+            overworldCoastLine,
+            [],
+            { corruptionStage: surfaceCorruptionStageRef.current }
           );
           // Escalier overworld : flash rapide pour être visible de loin
           const isStairs = overworldRawMap[realY]?.[realX] === OW_TILE.STAIRS;
@@ -5045,6 +5047,7 @@ function DownwardsNeon() {
     overworldRawMap,
     overworldTick,
     overworldCoastLine,
+    surfaceCorruptionStage,
   ]);
 
   const gridData = useMemo(() => {
