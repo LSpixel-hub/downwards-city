@@ -1555,7 +1555,7 @@ function DownwardsNeon() {
     const newCombo = currentCombo + 1;
     setComboCount(newCombo);
     if (newCombo >= 3 && overdriveTurnsRef.current <= 0) {
-      setOverdriveTurns(3);
+      setOverdriveTurns(10);
       setComboCount(0);
       showMessage("⚡ OVERDRIVE ACTIVATED ⚡", NEON.red, 2500);
     }
