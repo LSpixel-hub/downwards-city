@@ -305,8 +305,10 @@ export const getNeonColor = (x, y) => {
 };
 
 const findSignColor = (x, y) => {
+  const ox = x - _charMapOffsetX;
+  const oy = y - _charMapOffsetY;
   for (const s of NEON_SIGNS) {
-    if (y === s.y && x >= s.x && x < s.x + s.len) return s.color;
+    if (oy === s.y && ox >= s.x && ox < s.x + s.len) return s.color;
   }
   return getNeonColor(x, y);
 };
@@ -352,11 +354,15 @@ export const getTileRender = (
 ) => {
   const corruptionStage = options.corruptionStage || 0;
   const tile = map[y]?.[x];
-  const ch = _charMap?.[y - _charMapOffsetY]?.[x - _charMapOffsetX] || " ";
+  // Original 0-indexed coordinates for position-dependent logic
+  // (map access uses x,y which may be 1-indexed after shifting)
+  const origX = x - _charMapOffsetX;
+  const origY = y - _charMapOffsetY;
+  const ch = _charMap?.[origY]?.[origX] || " ";
   if (tile == null) return { char: " ", color: "#000" };
 
   // Calcul du fond du ciel pour la transparence
-  const currentSkyBg = skyBgForRow(y);
+  const currentSkyBg = skyBgForRow(origY);
 
   switch (tile) {
     // ── CIEL & ÉTOILES ──────────
@@ -399,9 +405,9 @@ export const getTileRender = (
       };
     }
     case TILE.ROOF_EDGE: {
-      // Pour les toits hauts (y < 6), le fond doit être le ciel dégradé
+      // Pour les toits hauts (origY < 6), le fond doit être le ciel dégradé
       // Pour les toits bas intégrés, utiliser le fond du bâtiment
-      const bg = y < 6 ? currentSkyBg : PALETTE.buildingBg;
+      const bg = origY < 6 ? currentSkyBg : PALETTE.buildingBg;
       return { char: ch, color: PALETTE.roofEdge, bg };
     }
     case TILE.WALL_DETAIL: {
@@ -518,7 +524,7 @@ export const getTileRender = (
     case TILE.STREET: {
       const ci = (x * 13 + y * 7) % RENDER_CHARS.floor.length;
       const reflectColor = getAdjacentNeonColor(map, x, y);
-      const isPlaza = y <= 11;
+      const isPlaza = origY <= 11;
       const bg = isPlaza ? PALETTE.plazaDark : PALETTE.streetDark;
 
       return {
