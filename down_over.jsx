@@ -914,6 +914,17 @@ function DownwardsNeon() {
       [OW_TILE.STREETLIGHT]: TILE.CORRIDOR,
       [OW_TILE.STAIRS]: TILE.STAIRS,
       [OW_TILE.WATER]: TILE.VOID,
+      [OW_TILE.DOOR]: TILE.CORRIDOR,
+      [OW_TILE.PUDDLE]: TILE.CORRIDOR,
+      [OW_TILE.SAND]: TILE.CORRIDOR,
+      [OW_TILE.SKY]: TILE.VOID,
+      [OW_TILE.STAR]: TILE.VOID,
+      [OW_TILE.WALL_DETAIL]: TILE.WALL,
+      [OW_TILE.RAILING]: TILE.WALL,
+      [OW_TILE.ROOF_EDGE]: TILE.WALL,
+      [OW_TILE.AWNING]: TILE.WALL,
+      [OW_TILE.VENDING]: TILE.WALL,
+      [OW_TILE.AC_UNIT]: TILE.WALL,
     }),
     []
   );
@@ -4015,7 +4026,18 @@ function DownwardsNeon() {
     setSurfaceDefenseReadyToReturn(false);
     setSurfaceDefenseSourceLevel(null);
     setFloorsWithoutSurfaceDefense(0);
-    setPendingScroll(true);
+    setShowLevelTransition(true);
+    if (levelTransitionTimerRef.current) {
+      clearTimeout(levelTransitionTimerRef.current);
+    }
+    levelTransitionTimerRef.current = setTimeout(() => {
+      setShowLevelTransition(false);
+      levelTransitionTimerRef.current = null;
+      setPendingScroll(true);
+      if (floorObjectiveRef.current) {
+        setShowChallengeOverlay(true);
+      }
+    }, 1500);
     showMessage("◆ SURFACE SECURED — DESCENDING DEEPER ◆", NEON.cyan, 3200);
   }, [generateLevel, makeFloorObjective, showMessage, surfaceDefenseSourceLevelRef]);
 
@@ -4078,8 +4100,10 @@ function DownwardsNeon() {
     if (!isSecretVault) return;
     const biome = activeBiome;
     if (!biome?.isBoss) return;
+    // Already unlocked — skip to avoid repeated messages
+    if (hasKeyRef.current) return;
     const alive = monsters.filter((m) => m.currentHp > 0 && m.x > 0);
-    if (alive.length === 0 && monsters.length > 0) {
+    if (alive.length === 0) {
       // Boss vaincu → débloquer l'escalier
       setHasKey(true);
       showMessage("◆ BOSS DEFEATED — EXIT UNLOCKED ◆", NEON.yellow, 4000);
@@ -5107,9 +5131,11 @@ function DownwardsNeon() {
         const isRevealed = revealedZones.has(zone);
         const monster = activeMonstersMap.get(tileKey);
         if (monster && isRevealed) {
+          const underMonster = baseRow?.[x];
           row.push({
             char: monster.char,
             color: monster.color,
+            bg: level === 0 && underMonster?.bg ? underMonster.bg : undefined,
             glow: `0 0 5px ${monster.color}, 0 0 10px ${monster.color}`,
             animation: null,
           });
