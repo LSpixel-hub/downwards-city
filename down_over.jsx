@@ -5242,7 +5242,7 @@ function DownwardsNeon() {
       />
       <div className="horizon-line" />
 
-      {/* TITLE SCREEN */}
+     {/* TITLE SCREEN */}
       {gameState === "title" && (
         <div
           style={{
@@ -5256,19 +5256,42 @@ function DownwardsNeon() {
             justifyContent: "center",
           }}
         >
+          {/* Faux terminal Commodore 64 pour le lore */}
+          <div
+            style={{
+              fontFamily: '"Share Tech Mono", monospace',
+              color: "#4d6dff", // Bleu typique C64
+              fontSize: "clamp(0.6rem, 2.5vw, 1rem)",
+              marginBottom: "30px",
+              textShadow: `0 0 5px #4d6dff`,
+              opacity: 0.85,
+              textAlign: "left",
+              width: "100%",
+              maxWidth: "600px",
+            }}
+          >
+            <p style={{ margin: "2px 0" }}>**** COMMODORE 64 BASIC V2 ****</p>
+            <p style={{ margin: "2px 0" }}>64K RAM SYSTEM  38911 BASIC BYTES FREE</p>
+            <p style={{ margin: "10px 0" }}>READY.</p>
+            <p style={{ margin: "2px 0" }}>LOAD "KERNAL_BREACH",8,1</p>
+            <p style={{ margin: "10px 0", color: NEON.red, animation: "flash 1.5s infinite" }}>
+              ?FATAL EXCEPTION ERROR
+            </p>
+          </div>
+
           <div
             style={{
               fontFamily: "Orbitron, sans-serif",
-              fontSize: "clamp(2.5rem, 10vw, 5rem)",
+              fontSize: "clamp(2rem, 8vw, 4.5rem)",
               fontWeight: 900,
               color: NEON.cyan,
               textShadow: `0 0 10px ${NEON.cyan}, 0 0 20px ${NEON.cyan}, 0 0 40px ${NEON.cyan}, 0 0 80px ${NEON.blue}`,
-              letterSpacing: "0.2em",
+              letterSpacing: "0.1em",
               marginBottom: "10px",
               animation: "neonFlicker 3s ease-in-out infinite",
             }}
           >
-            DOWNWARDS
+            KERNAL BREACH
           </div>
 
           <div
@@ -5281,12 +5304,12 @@ function DownwardsNeon() {
               marginBottom: "60px",
             }}
           >
-            OVERDRIVE ROGUE
+            HARDWARE ROGUE
           </div>
 
           <div
             style={{
-              width: "200px",
+              width: "250px",
               height: "3px",
               background: `linear-gradient(90deg, transparent, ${NEON.pink}, ${NEON.cyan}, ${NEON.pink}, transparent)`,
               margin: "0 auto 60px",
@@ -5298,7 +5321,7 @@ function DownwardsNeon() {
             onClick={goToLore}
             style={{
               fontFamily: "Orbitron, sans-serif",
-              background: "transparent",
+              background: "rgba(0, 0, 0, 0.4)",
               border: `2px solid ${NEON.cyan}`,
               color: NEON.cyan,
               padding: "20px 60px",
@@ -5307,27 +5330,29 @@ function DownwardsNeon() {
               cursor: "pointer",
               position: "relative",
               textShadow: `0 0 10px ${NEON.cyan}`,
-              boxShadow: `0 0 10px ${NEON.cyan}, inset 0 0 10px rgba(5,217,232,0.1)`,
+              boxShadow: `0 0 10px ${NEON.cyan}, inset 0 0 15px rgba(5,217,232,0.15)`,
               transition: "all 0.3s ease",
               animation: "borderGlow 2s ease-in-out infinite",
             }}
           >
-            ▶ INSERT COIN
+            ▶ SYS BOOT
           </button>
 
+          {/* Contrôles traduits en anglais */}
           <div
             style={{
               marginTop: "60px",
               color: NEON.purple,
               fontSize: "0.8rem",
               textShadow: `0 0 5px ${NEON.purple}`,
+              lineHeight: "1.6",
             }}
           >
-            <p>◆ TAP CARTE ou FLECHES (DIAGONALES) POUR BOUGER ◆</p>
-            <p>◆ CTRL+DIR / BOUTON FAST = CORRIDOR DASH ◆</p>
-            <p>◆ BOUTONS +/− = ZOOM CARTE (MOBILE) ◆</p>
+            <p>◆ TAP MAP OR ARROWS (DIAGONALS) TO MOVE ◆</p>
+            <p>◆ CTRL+DIR OR DASH BUTTON = CORRIDOR DASH ◆</p>
+            <p>◆ PINCH TO ZOOM MAP (MOBILE) ◆</p>
             <p style={{ color: NEON.pink }}>
-              ◆ F: FIRE | T: TELEPORT | R: PRAY | S: STAIRS ◆
+              ◆ F: FIRE | T: TELEPORT | R: RESTORE | S: STAIRS ◆
             </p>
             <p style={{ color: NEON.cyan }}>◆ 1-6 (TOP ROW) = CHANGE CLASS ◆</p>
           </div>
