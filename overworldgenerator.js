@@ -222,6 +222,15 @@ const CHAR_TO_TILE = {
 };
 
 let _charMap = null;
+let _charMapOffsetX = 0;
+let _charMapOffsetY = 0;
+
+// Called after generating the overworld to align _charMap with the 1-indexed
+// shifted map used by the game engine rendering loop.
+export const setCharMapOffset = (dx, dy) => {
+  _charMapOffsetX = dx;
+  _charMapOffsetY = dy;
+};
 
 // ============================================
 // MOTEUR DE GÉNÉRATION
@@ -343,7 +352,7 @@ export const getTileRender = (
 ) => {
   const corruptionStage = options.corruptionStage || 0;
   const tile = map[y]?.[x];
-  const ch = _charMap?.[y]?.[x] || " ";
+  const ch = _charMap?.[y - _charMapOffsetY]?.[x - _charMapOffsetX] || " ";
   if (tile == null) return { char: " ", color: "#000" };
 
   // Calcul du fond du ciel pour la transparence

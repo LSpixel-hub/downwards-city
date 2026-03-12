@@ -13,6 +13,7 @@ import {
   TILE as OW_TILE,
   PALETTE as OW_PALETTE,
   getTileRender as getOverworldTileRender,
+  setCharMapOffset,
 } from "./overworldgenerator";
 import { NEON, CLASSES, POTIONS, VENDOR_SCROLLS, GEMS } from "./data";
 import {
@@ -932,6 +933,7 @@ function DownwardsNeon() {
   // ======== OVERWORLD : Entrer dans la vue ville (level 0) ========
   const enterOverworld = useCallback(() => {
     const ow = generateOverworld();
+    setCharMapOffset(1, 1); // Align 0-indexed charMap with 1-indexed shifted map
 
     // Overworld generator is 0-based; the dungeon engine expects a 1-based grid.
     // Re-map all overworld arrays so indices [1..GRID_WIDTH][1..GRID_HEIGHT] are valid.
@@ -3894,6 +3896,7 @@ function DownwardsNeon() {
   const enterSurfaceDefense = useCallback(
     (sourceLevel) => {
       const ow = generateOverworld();
+      setCharMapOffset(1, 1); // Align 0-indexed charMap with 1-indexed shifted map
       const shiftedRawMap = Array(GRID_HEIGHT + 1)
         .fill(null)
         .map(() => Array(GRID_WIDTH + 1).fill(OW_TILE.VOID));
