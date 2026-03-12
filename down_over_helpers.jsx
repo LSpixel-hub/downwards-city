@@ -374,7 +374,7 @@ export const renderTileData = (tile, biome, gemColor) => {
     case TILE.ARMOR:
       return {
         char: "⛨",
-        color: "#9fb7c9",
+        color: "#4a90d9",
         glow: glowStyle("#9fb7c9"),
         flash: false,
       };
