@@ -37,6 +37,31 @@ export const TILE = {
   SAND: 19, // Sable (marchable)
 };
 
+// Overworld tile → Dungeon tile conversion map
+// Uses raw numeric IDs to avoid circular dependency with down_over_helpers
+// Dungeon TILE: VOID=0, CORRIDOR=3, WALL=2, STAIRS=4
+export const OW_TO_DUNGEON = {
+  [TILE.VOID]: 0,       // VOID → VOID
+  [TILE.STREET]: 3,     // STREET → CORRIDOR
+  [TILE.BUILDING]: 2,   // BUILDING → WALL
+  [TILE.LIT_WINDOW]: 2, // LIT_WINDOW → WALL
+  [TILE.NEON_SIGN]: 2,  // NEON_SIGN → WALL
+  [TILE.STREETLIGHT]: 3, // STREETLIGHT → CORRIDOR
+  [TILE.STAIRS]: 4,     // STAIRS → STAIRS
+  [TILE.WATER]: 0,      // WATER → VOID
+  [TILE.DOOR]: 3,       // DOOR → CORRIDOR
+  [TILE.PUDDLE]: 3,     // PUDDLE → CORRIDOR
+  [TILE.SAND]: 3,       // SAND → CORRIDOR
+  [TILE.SKY]: 0,        // SKY → VOID
+  [TILE.STAR]: 0,       // STAR → VOID
+  [TILE.WALL_DETAIL]: 2, // WALL_DETAIL → WALL
+  [TILE.RAILING]: 2,    // RAILING → WALL
+  [TILE.ROOF_EDGE]: 2,  // ROOF_EDGE → WALL
+  [TILE.AWNING]: 2,     // AWNING → WALL
+  [TILE.VENDING]: 2,    // VENDING → WALL
+  [TILE.AC_UNIT]: 2,    // AC_UNIT → WALL
+};
+
 // Set des tuiles marchables pour collision check rapide
 export const WALKABLE = new Set([
   TILE.STREET,
