@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useRef,
   useMemo,
+  useReducer,
 } from "react";
 import { flushSync } from "react-dom";
 import { generateThemedVault } from "./vaultgenerator";
@@ -72,12 +73,16 @@ import {
 } from "./down_over_helpers";
 import { getGameStyles } from "./down_over_styles";
 import { getRand } from "./prng";
+import { createCityGrid } from "./citygrid";
+import { cityReducer, initialCityState } from "./citystate";
 import {
   GameOverScreen,
   VictoryScreen,
   ChallengeAnnouncement,
   ConfirmPromptDialog,
 } from "./down_over_components";
+
+const USE_CITY_GRID = true;
 
 // Main Component
 function DownwardsNeon() {
@@ -167,6 +172,8 @@ function DownwardsNeon() {
   const [overworldRawMap, setOverworldRawMap] = useState(null); // raw overworld tile IDs for rendering
   const [overworldCoastLine, setOverworldCoastLine] = useState([]);
   const [overworldTick, setOverworldTick] = useState(0);
+  const [cityState, dispatchCity] = useReducer(cityReducer, initialCityState);
+  const cityGrid = useMemo(() => createCityGrid(), []);
   const [surfaceDefenseActive, setSurfaceDefenseActive] = useState(false);
   const [surfaceDefenseReadyToReturn, setSurfaceDefenseReadyToReturn] =
     useState(false);
@@ -200,6 +207,9 @@ function DownwardsNeon() {
     width: 0,
     height: 0,
   });
+
+  const isInOverworld = level === 0;
+  const isInCityGrid = isInOverworld && USE_CITY_GRID;
 
   // Fast travel armed mode (mobile FAST button)
   const [fastTravelArmed, setFastTravelArmed] = useState(false);
@@ -615,13 +625,8 @@ function DownwardsNeon() {
 
   const getInitialMapZoom = useCallback(() => 1, []);
 
-  // ======== OVERWORLD : Entrer dans la vue ville (level 0) ========
-  const enterOverworld = useCallback(() => {
+  const buildCityScreenData = useCallback((screen) => {
     const ow = generateOverworld();
-    setCharMapOffset(1, 1); // Align 0-indexed charMap with 1-indexed shifted map
-
-    // Overworld generator is 0-based; the dungeon engine expects a 1-based grid.
-    // Re-map all overworld arrays so indices [1..GRID_WIDTH][1..GRID_HEIGHT] are valid.
     const shiftedRawMap = Array(GRID_HEIGHT + 1)
       .fill(null)
       .map(() => Array(GRID_WIDTH + 1).fill(OW_TILE.VOID));
@@ -637,10 +642,39 @@ function DownwardsNeon() {
       shiftedCoastLine[x + 1] = ow.coastLine[x] + 1;
     }
 
-    // Convertir la map overworld en tile IDs dungeon pour le moteur de jeu
     const dungeonMap = shiftedRawMap.map((row) =>
       row.map((t) => OW_TO_DUNGEON[t] ?? TILE.VOID)
     );
+
+    // Keep stairs only in the central hub for now.
+    if (screen?.coords?.x !== 2 || screen?.coords?.y !== 2) {
+      for (let y = 1; y <= GRID_HEIGHT; y += 1) {
+        for (let x = 1; x <= GRID_WIDTH; x += 1) {
+          if (shiftedRawMap[y]?.[x] === OW_TILE.STAIRS) {
+            shiftedRawMap[y][x] = OW_TILE.STREET;
+            dungeonMap[y][x] = OW_TO_DUNGEON[OW_TILE.STREET];
+          }
+        }
+      }
+    }
+
+    return {
+      ow,
+      shiftedRawMap,
+      shiftedCoastLine,
+      dungeonMap,
+    };
+  }, []);
+
+  // ======== OVERWORLD : Entrer dans la vue ville (level 0) ========
+  const enterOverworld = useCallback(() => {
+    setCharMapOffset(1, 1); // Align 0-indexed charMap with 1-indexed shifted map
+
+    const nextScreen = USE_CITY_GRID
+      ? cityGrid.getScreen(initialCityState.activeScreen.x, initialCityState.activeScreen.y)
+      : null;
+    const { ow, shiftedRawMap, shiftedCoastLine, dungeonMap } =
+      buildCityScreenData(nextScreen);
 
     // Garder la map brute pour le rendu overworld
     setOverworldRawMap(shiftedRawMap);
@@ -706,7 +740,11 @@ function DownwardsNeon() {
 
     // Injecter la map convertie dans le moteur de jeu
     setMap(dungeonMap);
-    setPlayer({ x: ow.playerPos.x + 1, y: ow.playerPos.y + 1 });
+    setPlayer(
+      USE_CITY_GRID
+        ? { ...initialCityState.playerPos }
+        : { x: ow.playerPos.x + 1, y: ow.playerPos.y + 1 }
+    );
     setStairsPos({ x: ow.stairsPos.x + 1, y: ow.stairsPos.y + 1 });
     setTeleporter1({ x: 0, y: 0, active: false });
     setTeleporter2({ x: 0, y: 0, active: false });
@@ -718,6 +756,14 @@ function DownwardsNeon() {
     setPendingArmor(null);
     setPendingBow(null);
     setGemOnMap(null);
+    dispatchCity({
+      type: "CITY_SCREEN_CHANGED",
+      payload: { screen: { ...initialCityState.activeScreen } },
+    });
+    dispatchCity({
+      type: "CITY_SET_TRANSITION",
+      payload: { active: false, direction: null },
+    });
     // Révéler toute la carte overworld (pas de fog of war)
     const allZones = new Set();
     for (let y = 1; y <= GRID_HEIGHT; y++) {
@@ -736,7 +782,7 @@ function DownwardsNeon() {
       OW_PALETTE.neonCyan,
       4000
     );
-  }, [showMessage]);
+  }, [buildCityScreenData, cityGrid, showMessage]);
 
   // ======== OVERWORLD : Animation lente de l'eau ========
   useEffect(() => {
@@ -1962,7 +2008,62 @@ function DownwardsNeon() {
       const nx = _player.x + dx;
       const ny = _player.y + dy;
 
-      if (nx < 1 || nx > GRID_WIDTH || ny < 1 || ny > GRID_HEIGHT) return;
+      if (nx < 1 || nx > GRID_WIDTH || ny < 1 || ny > GRID_HEIGHT) {
+        if (!isInCityGrid) return;
+
+        const currentScreen = cityState.activeScreen;
+        const direction =
+          nx < 1 ? "west" : nx > GRID_WIDTH ? "east" : ny < 1 ? "north" : "south";
+
+        if (!cityGrid.canExit(currentScreen.x, currentScreen.y, direction)) return;
+
+        const deltaByDir = {
+          north: { x: 0, y: -1 },
+          south: { x: 0, y: 1 },
+          west: { x: -1, y: 0 },
+          east: { x: 1, y: 0 },
+        };
+        const delta = deltaByDir[direction];
+        const nextScreenCoords = {
+          x: currentScreen.x + delta.x,
+          y: currentScreen.y + delta.y,
+        };
+        const nextScreen = cityGrid.getScreen(nextScreenCoords.x, nextScreenCoords.y);
+        if (!nextScreen) return;
+
+        const { shiftedRawMap, shiftedCoastLine, dungeonMap } =
+          buildCityScreenData(nextScreen);
+
+        dispatchCity({
+          type: "CITY_MOVE_REQUEST",
+          payload: { direction },
+        });
+        setMap(dungeonMap);
+        setOverworldRawMap(shiftedRawMap);
+        setOverworldCoastLine(shiftedCoastLine);
+        dispatchCity({
+          type: "CITY_SCREEN_CHANGED",
+          payload: { screen: nextScreenCoords },
+        });
+
+        const edgePadding = 2;
+        const wrappedPos =
+          direction === "west"
+            ? { x: GRID_WIDTH - edgePadding, y: _player.y }
+            : direction === "east"
+            ? { x: 1 + edgePadding, y: _player.y }
+            : direction === "north"
+            ? { x: _player.x, y: GRID_HEIGHT - edgePadding }
+            : { x: _player.x, y: 1 + edgePadding };
+
+        setPlayer(wrappedPos);
+        dispatchCity({
+          type: "CITY_SET_TRANSITION",
+          payload: { active: false, direction: null },
+        });
+        setPendingScroll(true);
+        return;
+      }
 
       const tile = _map[ny][nx];
       if (tile === TILE.VOID && _currentClass !== 5) return;
@@ -2482,7 +2583,11 @@ function DownwardsNeon() {
     [
       applyPotionEffect,
       applyTerrainToMonster,
+      buildCityScreenData,
+      cityGrid,
+      cityState.activeScreen,
       getDamage,
+      isInCityGrid,
       processMonsterTurn,
       showMessage,
       spawnDeathEffect,
@@ -4600,7 +4705,7 @@ function DownwardsNeon() {
   // ============================================
   const baseGrid = useMemo(() => {
     const hidden = { char: " ", color: "#000", glow: "none", animation: null };
-    const isOverworld = level === 0 && overworldRawMap;
+    const isOverworld = isInOverworld && overworldRawMap;
     const grid = [];
     for (let y = 0; y < GRID_HEIGHT; y++) {
       const row = [];
@@ -4714,7 +4819,7 @@ function DownwardsNeon() {
           row.push({
             char: "@",
             color: classColor,
-            bg: level === 0 && underPlayer?.bg ? underPlayer.bg : undefined,
+            bg: isInOverworld && underPlayer?.bg ? underPlayer.bg : undefined,
             glow: classGlow,
             animation: "glow 1s ease-in-out infinite",
           });
@@ -4742,7 +4847,7 @@ function DownwardsNeon() {
           row.push({
             char: monster.char,
             color: monster.color,
-            bg: level === 0 && underMonster?.bg ? underMonster.bg : undefined,
+            bg: isInOverworld && underMonster?.bg ? underMonster.bg : undefined,
             glow: `0 0 5px ${monster.color}, 0 0 10px ${monster.color}`,
             animation: null,
           });
@@ -5061,8 +5166,8 @@ function DownwardsNeon() {
             {[
               {
                 label: "LVL",
-                value: level === 0 ? "CITY" : level,
-                color: level === 0 ? OW_PALETTE.neonCyan : NEON.cyan,
+                value: isInOverworld ? "CITY" : level,
+                color: isInOverworld ? OW_PALETTE.neonCyan : NEON.cyan,
               },
               {
                 label: "HP",
