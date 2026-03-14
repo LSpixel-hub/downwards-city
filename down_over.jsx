@@ -66,6 +66,7 @@ import {
   DASH_STOP_AFTER,
 } from "./down_over_helpers";
 import { getGameStyles } from "./down_over_styles";
+import { getRand } from "./prng";
 import {
   GameOverScreen,
   VictoryScreen,
@@ -621,13 +622,13 @@ function DownwardsNeon() {
         .fill(null)
         .map(() => Array(GRID_WIDTH + 1).fill(TILE.VOID));
       const rooms = [];
-      const numRooms = 8 + Math.floor(Math.random() * 5);
+      const numRooms = 8 + Math.floor(getRand() * 5);
 
       for (let r = 0; r < numRooms; r++) {
-        const roomW = 3 + Math.floor(Math.random() * 4);
-        const roomH = 3 + Math.floor(Math.random() * 3);
-        const roomX = 2 + Math.floor(Math.random() * (GRID_WIDTH - roomW - 3));
-        const roomY = 2 + Math.floor(Math.random() * (GRID_HEIGHT - roomH - 3));
+        const roomW = 3 + Math.floor(getRand() * 4);
+        const roomH = 3 + Math.floor(getRand() * 3);
+        const roomX = 2 + Math.floor(getRand() * (GRID_WIDTH - roomW - 3));
+        const roomY = 2 + Math.floor(getRand() * (GRID_HEIGHT - roomH - 3));
 
         for (let y = roomY; y < roomY + roomH; y++) {
           for (let x = roomX; x < roomX + roomW; x++) {
@@ -694,13 +695,13 @@ function DownwardsNeon() {
           (t) => !excludeSet.has(`${t.x},${t.y}`)
         );
         if (available.length === 0) return { x: rooms[0].cx, y: rooms[0].cy };
-        return available[Math.floor(Math.random() * available.length)];
+        return available[Math.floor(getRand() * available.length)];
       };
       // ==============================================================
 
       const playerPos = {
-        x: rooms[0].x + Math.floor(Math.random() * rooms[0].w),
-        y: rooms[0].y + Math.floor(Math.random() * rooms[0].h),
+        x: rooms[0].x + Math.floor(getRand() * rooms[0].w),
+        y: rooms[0].y + Math.floor(getRand() * rooms[0].h),
       };
       const allPlaced = [playerPos];
 
@@ -712,7 +713,7 @@ function DownwardsNeon() {
         0.95,
         baseVaultChance + badgeCount * 0.04 + overloadBonus
       );
-      const isVaultStairs = lvl < 50 && Math.random() < boostedVaultChance;
+      const isVaultStairs = lvl < 50 && getRand() < boostedVaultChance;
       newMap[stairsPosition.y][stairsPosition.x] =
         lvl === 50
           ? TILE.PRINCESS
@@ -742,35 +743,35 @@ function DownwardsNeon() {
       allPlaced.push(tp2);
       newMap[tp2.y][tp2.x] = TILE.TELEPORTER;
 
-      const needKey = Math.random() < 0.25;
+      const needKey = getRand() < 0.25;
       if (needKey) {
         const keyPos = getValidTile(allPlaced);
         allPlaced.push(keyPos);
         newMap[keyPos.y][keyPos.x] = TILE.KEY;
       }
 
-      if (Math.random() < 0.3) {
+      if (getRand() < 0.3) {
         const potionPos = getValidTile(allPlaced);
         allPlaced.push(potionPos);
         newMap[potionPos.y][potionPos.x] = TILE.POTION;
       }
-      if (Math.random() < 0.15) {
+      if (getRand() < 0.15) {
         const scrollPos = getValidTile(allPlaced);
         allPlaced.push(scrollPos);
         newMap[scrollPos.y][scrollPos.x] = TILE.SCROLL;
       }
 
       let vendorData = null;
-      if (Math.random() < 0.25) {
+      if (getRand() < 0.25) {
         const vendorPos = getValidTile(allPlaced);
         allPlaced.push(vendorPos);
         newMap[vendorPos.y][vendorPos.x] = TILE.VENDOR;
         const tier = VENDOR_SCROLLS[getVendorTier(lvl)];
-        vendorData = { ...tier[Math.floor(Math.random() * tier.length)] };
+        vendorData = { ...tier[Math.floor(getRand() * tier.length)] };
       }
 
       let weaponData = null;
-      if (lvl === 1 || (lvl >= 2 && Math.random() < 0.2)) {
+      if (lvl === 1 || (lvl >= 2 && getRand() < 0.2)) {
         const weaponPos = getValidTile(allPlaced);
         allPlaced.push(weaponPos);
         newMap[weaponPos.y][weaponPos.x] = TILE.WEAPON;
@@ -778,7 +779,7 @@ function DownwardsNeon() {
       }
 
       let armorData = null;
-      if (Math.random() < 0.2) {
+      if (getRand() < 0.2) {
         const armorPos = getValidTile(allPlaced);
         allPlaced.push(armorPos);
         newMap[armorPos.y][armorPos.x] = TILE.ARMOR;
@@ -786,7 +787,7 @@ function DownwardsNeon() {
       }
 
       const goldCount =
-        Math.random() < 0.5 ? 1 + Math.floor(Math.random() * 4) : 0;
+        getRand() < 0.5 ? 1 + Math.floor(getRand() * 4) : 0;
       for (let g = 0; g < goldCount; g++) {
         const goldPos = getValidTile(allPlaced);
         allPlaced.push(goldPos);
@@ -794,7 +795,7 @@ function DownwardsNeon() {
       }
 
       let bowData = null;
-      if (Math.random() < 0.15) {
+      if (getRand() < 0.15) {
         const bowPos = getValidTile(allPlaced);
         allPlaced.push(bowPos);
         newMap[bowPos.y][bowPos.x] = TILE.BOW;
@@ -809,7 +810,7 @@ function DownwardsNeon() {
           .filter((idx) => idx >= 0);
         if (available.length > 0) {
           const gemIdx =
-            available[Math.floor(Math.random() * available.length)];
+            available[Math.floor(getRand() * available.length)];
           const gemPos = getValidTile(allPlaced);
           allPlaced.push(gemPos);
           newMap[gemPos.y][gemPos.x] = TILE.GEM;
@@ -819,12 +820,12 @@ function DownwardsNeon() {
 
       let monsterCount =
         lvl === 1
-          ? 1 + Math.floor(Math.random() * 2)
+          ? 1 + Math.floor(getRand() * 2)
           : lvl <= 15
-          ? 1 + Math.floor(Math.random() * 4)
+          ? 1 + Math.floor(getRand() * 4)
           : lvl <= 30
-          ? 2 + Math.floor(Math.random() * 5)
-          : 3 + Math.floor(Math.random() * 6);
+          ? 2 + Math.floor(getRand() * 5)
+          : 3 + Math.floor(getRand() * 6);
 
       const newMonsters = [];
       for (let m = 0; m < monsterCount; m++) {
@@ -852,7 +853,7 @@ function DownwardsNeon() {
       // ======== COMBO/OVERDRIVE OBJECTS ========
       // Barrels: appear from level 5+, 1-2 per floor
       if (lvl >= 5) {
-        const barrelCount = 1 + (Math.random() < 0.4 ? 1 : 0);
+        const barrelCount = 1 + (getRand() < 0.4 ? 1 : 0);
         for (let b = 0; b < barrelCount; b++) {
           const barrelPos = getValidTile(allPlaced);
           allPlaced.push(barrelPos);
@@ -861,14 +862,14 @@ function DownwardsNeon() {
       }
 
       // Blood Altar: rare, from level 10+, 15% chance
-      if (lvl >= 10 && Math.random() < 0.15) {
+      if (lvl >= 10 && getRand() < 0.15) {
         const altarPos = getValidTile(allPlaced);
         allPlaced.push(altarPos);
         newMap[altarPos.y][altarPos.x] = TILE.BLOOD_ALTAR;
       }
 
       // Overload Key: rare, from level 15+, 10% chance
-      if (lvl >= 15 && Math.random() < 0.1) {
+      if (lvl >= 15 && getRand() < 0.1) {
         const okPos = getValidTile(allPlaced);
         allPlaced.push(okPos);
         newMap[okPos.y][okPos.x] = TILE.OVERLOAD_KEY;
@@ -1640,7 +1641,7 @@ function DownwardsNeon() {
               spawnDeathEffect(tx, ty, m.color);
               const loot =
                 1 +
-                Math.floor(Math.random() * 3) +
+                Math.floor(getRand() * 3) +
                 Math.floor(levelRef.current / 5);
               totalGold += loot;
               terrainKillCount += 1;
@@ -1918,7 +1919,7 @@ function DownwardsNeon() {
               0.9,
               getMonsterMissChance(_level) + icePenalty
             );
-            if (Math.random() < missChance) {
+            if (getRand() < missChance) {
               missOccurred = true;
               return updatedMonster;
             }
@@ -1929,13 +1930,13 @@ function DownwardsNeon() {
             if (
               (updatedMonster.effect?.type === "PIERCE" ||
                 updatedMonster.effect?.type === "INFERNO") &&
-              Math.random() < updatedMonster.effect.chance
+              getRand() < updatedMonster.effect.chance
             ) {
               effectMsg = `‡ ${updatedMonster.effect.msg} ‡`;
               dmgEffectTriggered = true;
             } else if (
               updatedMonster.effect?.type === "HEAVY_BLOW" &&
-              Math.random() < updatedMonster.effect.chance
+              getRand() < updatedMonster.effect.chance
             ) {
               dmg = Math.max(1, Math.floor(dmg * 1.5) - _armor);
               effectMsg = `!! ${updatedMonster.effect.msg} !!`;
@@ -1951,26 +1952,26 @@ function DownwardsNeon() {
             if (!dmgEffectTriggered) {
               if (
                 updatedMonster.effect?.type === "STEAL_GOLD" &&
-                Math.random() < updatedMonster.effect.chance
+                getRand() < updatedMonster.effect.chance
               ) {
-                const stolen = 1 + Math.floor(Math.random() * 2);
+                const stolen = 1 + Math.floor(getRand() * 2);
                 goldDelta -= stolen;
                 effectMsg = `✋ ${updatedMonster.effect.msg} -${stolen}G ✋`;
               } else if (
                 updatedMonster.effect?.type === "WITHER" &&
-                Math.random() < updatedMonster.effect.chance
+                getRand() < updatedMonster.effect.chance
               ) {
                 maxHpDelta -= 1;
                 effectMsg = `☠ ${updatedMonster.effect.msg} -1 MAX HP ☠`;
               } else if (
                 updatedMonster.effect?.type === "DRAIN" &&
-                Math.random() < updatedMonster.effect.chance
+                getRand() < updatedMonster.effect.chance
               ) {
                 dmgBonusDelta -= 1;
                 effectMsg = `☠ ${updatedMonster.effect.msg} -1 DMG ☠`;
               } else if (
                 updatedMonster.effect?.type === "CORRODE" &&
-                Math.random() < updatedMonster.effect.chance
+                getRand() < updatedMonster.effect.chance
               ) {
                 armorDelta -= 1;
                 effectMsg = `☠ ${updatedMonster.effect.msg} -1 ARM ☠`;
@@ -1979,7 +1980,7 @@ function DownwardsNeon() {
 
             if (
               updatedMonster.effect?.type === "VAMPIRISM" &&
-              Math.random() < updatedMonster.effect.chance
+              getRand() < updatedMonster.effect.chance
             ) {
               const healAmt = Math.max(1, Math.floor(dmg * 0.3));
               updatedMonster = {
@@ -2069,29 +2070,29 @@ function DownwardsNeon() {
             if (updatedMonster.ai === "RANGED") {
               const dist = distX + distY;
               if (dist < 4) {
-                if (Math.random() < 0.5 && pPos.x !== updatedMonster.x)
+                if (getRand() < 0.5 && pPos.x !== updatedMonster.x)
                   nx += pPos.x > updatedMonster.x ? -1 : 1;
                 else if (pPos.y !== updatedMonster.y)
                   ny += pPos.y > updatedMonster.y ? -1 : 1;
               } else if (dist > 4) {
-                if (Math.random() < 0.5 && pPos.x !== updatedMonster.x)
+                if (getRand() < 0.5 && pPos.x !== updatedMonster.x)
                   nx += pPos.x > updatedMonster.x ? 1 : -1;
                 else if (pPos.y !== updatedMonster.y)
                   ny += pPos.y > updatedMonster.y ? 1 : -1;
               } else {
                 if (distX > 0 && distY > 0) {
-                  if (Math.random() < 0.5)
+                  if (getRand() < 0.5)
                     nx += pPos.x > updatedMonster.x ? 1 : -1;
                   else ny += pPos.y > updatedMonster.y ? 1 : -1;
                 }
               }
-            } else if (updatedMonster.ai === "ERRATIC" && Math.random() < 0.5) {
+            } else if (updatedMonster.ai === "ERRATIC" && getRand() < 0.5) {
               let dirX = pPos.x > updatedMonster.x ? 1 : -1;
               let dirY = pPos.y > updatedMonster.y ? 1 : -1;
               if (pPos.x === updatedMonster.x)
-                dirX = Math.random() < 0.5 ? 1 : -1;
+                dirX = getRand() < 0.5 ? 1 : -1;
               if (pPos.y === updatedMonster.y)
-                dirY = Math.random() < 0.5 ? 1 : -1;
+                dirY = getRand() < 0.5 ? 1 : -1;
 
               nx += dirX;
               ny += dirY;
@@ -2099,7 +2100,7 @@ function DownwardsNeon() {
               updatedMonster.ai === "COWARD" &&
               updatedMonster.currentHp < updatedMonster.hp * 0.3
             ) {
-              if (Math.random() < 0.5 && pPos.x !== updatedMonster.x)
+              if (getRand() < 0.5 && pPos.x !== updatedMonster.x)
                 nx += pPos.x > updatedMonster.x ? -1 : 1;
               else if (pPos.y !== updatedMonster.y)
                 ny += pPos.y > updatedMonster.y ? -1 : 1;
@@ -2110,7 +2111,7 @@ function DownwardsNeon() {
             ) {
               return finalMonsterState;
             } else {
-              if (Math.random() < 0.5 && pPos.x !== updatedMonster.x)
+              if (getRand() < 0.5 && pPos.x !== updatedMonster.x)
                 nx += pPos.x > updatedMonster.x ? 1 : -1;
               else if (pPos.y !== updatedMonster.y)
                 ny += pPos.y > updatedMonster.y ? 1 : -1;
@@ -2143,14 +2144,14 @@ function DownwardsNeon() {
             }
           } else {
             // === NOUVELLE LOGIQUE : ERRANCE (WANDERING) ===
-            if (Math.random() < 0.5) {
+            if (getRand() < 0.5) {
               const dirs = [
                 { dx: 0, dy: -1 }, // Haut
                 { dx: 0, dy: 1 }, // Bas
                 { dx: -1, dy: 0 }, // Gauche
                 { dx: 1, dy: 0 }, // Droite
               ];
-              const randomDir = dirs[Math.floor(Math.random() * dirs.length)];
+              const randomDir = dirs[Math.floor(getRand() * dirs.length)];
               let nx = updatedMonster.x + randomDir.dx;
               let ny = updatedMonster.y + randomDir.dy;
 
@@ -2186,7 +2187,7 @@ function DownwardsNeon() {
           if (terrainResult.damage > 0) {
             if (terrainResult.killed) {
               const loot =
-                1 + Math.floor(Math.random() * 2) + Math.floor(_level / 6);
+                1 + Math.floor(getRand() * 2) + Math.floor(_level / 6);
               terrainLootDelta += loot;
               terrainKillCountDelta += 1;
               if (finalMonsterState.x > 0 && finalMonsterState.y > 0) {
@@ -2220,7 +2221,7 @@ function DownwardsNeon() {
                   afterBarrel.color
                 );
                 const loot =
-                  1 + Math.floor(Math.random() * 2) + Math.floor(_level / 6);
+                  1 + Math.floor(getRand() * 2) + Math.floor(_level / 6);
                 terrainLootDelta += loot;
                 terrainKillCountDelta += 1;
                 effectMsg = `✦ ${afterBarrel.name.toUpperCase()} BARREL -3 HP ✦`;
@@ -2287,7 +2288,7 @@ function DownwardsNeon() {
   const applyDefensiveEffects = (monster, rawDmg) => {
     if (
       monster.effect?.type === "DODGE" &&
-      Math.random() < monster.effect.chance
+      getRand() < monster.effect.chance
     ) {
       return {
         finalDmg: 0,
@@ -2297,7 +2298,7 @@ function DownwardsNeon() {
     }
     if (
       monster.effect?.type === "PARRY" &&
-      Math.random() < monster.effect.chance
+      getRand() < monster.effect.chance
     ) {
       return {
         finalDmg: Math.max(1, Math.floor(rawDmg / 2)),
@@ -2310,13 +2311,13 @@ function DownwardsNeon() {
 
   const handleSpawnEffect = (monster, allMonsters, currentMap) => {
     if (!monster.effect || monster.effect.type !== "SPAWN") return allMonsters;
-    if (Math.random() >= monster.effect.chance) return allMonsters;
+    if (getRand() >= monster.effect.chance) return allMonsters;
     const dirs = [
       [0, -1],
       [0, 1],
       [-1, 0],
       [1, 0],
-    ].sort(() => Math.random() - 0.5);
+    ].sort(() => getRand() - 0.5);
     for (const [sdx, sdy] of dirs) {
       const sx = monster.x + sdx,
         sy = monster.y + sdy;
@@ -2446,7 +2447,7 @@ function DownwardsNeon() {
         }
 
         // 2. GESTION DE LA PERCÉE (CRIT) : 25% de chance de doubler les dégâts purs
-        if (weaponFamily === "CRIT" && Math.random() < 0.25) {
+        if (weaponFamily === "CRIT" && getRand() < 0.25) {
           rawDmg *= 2;
           combatMsg = "!! CRITICAL HIT !!";
           combatColor = NEON.yellow;
@@ -2528,7 +2529,7 @@ function DownwardsNeon() {
           if (terrainResult.killed) {
             terrainKillLoot =
               1 +
-              Math.floor(Math.random() * 2) +
+              Math.floor(getRand() * 2) +
               Math.floor(levelRef.current / 6);
             setTerrainKillsThisFloor((t) => t + 1);
           }
@@ -2553,7 +2554,7 @@ function DownwardsNeon() {
                   spawnDeathEffect(m.x, m.y, m.color);
                   extraGold +=
                     1 +
-                    Math.floor(Math.random() * 2) +
+                    Math.floor(getRand() * 2) +
                     Math.floor(levelRef.current / 6);
 
                   return { ...m, currentHp: 0, x: -1, y: -1 };
@@ -2570,7 +2571,7 @@ function DownwardsNeon() {
         if (newMonsters[monsterIdx].currentHp <= 0) {
           const baseLoot = monsterAtTarget.isBoss
             ? 100
-            : 1 + Math.floor(Math.random() * 3);
+            : 1 + Math.floor(getRand() * 3);
           const loot = monsterAtTarget.isBoss
             ? baseLoot
             : baseLoot + Math.floor(levelRef.current / 5) + terrainKillLoot;
@@ -2593,7 +2594,7 @@ function DownwardsNeon() {
 
           // 5. GESTION MAGIE (ARCANE) : Soin sur kill
           if (weaponFamily === "ARCANE") {
-            const healAmt = 5 + Math.floor(Math.random() * 6);
+            const healAmt = 5 + Math.floor(getRand() * 6);
             // Entre 5 et 10 HP
             setHp((h) => Math.min(maxHpRef.current, h + healAmt));
             spawnHealEffect(_player.x, _player.y);
@@ -2665,7 +2666,7 @@ function DownwardsNeon() {
       const newMap = [..._map];
       newMap[ny] = [...newMap[ny]];
       if (tile === TILE.GOLD) {
-        const baseAmt = 1 + Math.floor(Math.random() * 6);
+        const baseAmt = 1 + Math.floor(getRand() * 6);
         const vaultMult = activeBiomeRef.current?.vaultGoldMultiplier || 1;
         const amt = baseAmt * vaultMult;
         setGold((g) => g + amt);
@@ -2687,7 +2688,7 @@ function DownwardsNeon() {
         }
       }
       if (tile === TILE.POTION) {
-        const p = POTIONS[Math.floor(Math.random() * POTIONS.length)];
+        const p = POTIONS[Math.floor(getRand() * POTIONS.length)];
         applyPotionEffect(p, nx, ny);
         newMap[ny][nx] = TILE.FLOOR;
       }
@@ -2998,7 +2999,7 @@ function DownwardsNeon() {
             if (newMonsters[hitIdx].currentHp <= 0) {
               const baseLoot = targetMonster.isBoss
                 ? 100
-                : 1 + Math.floor(Math.random() * 3);
+                : 1 + Math.floor(getRand() * 3);
               const levelBonus = Math.floor(levelRef.current / 5);
               const loot = targetMonster.isBoss
                 ? baseLoot
@@ -3169,7 +3170,7 @@ function DownwardsNeon() {
                   spawnDeathEffect(tx, ty, newMonsters[mIdx].color);
                   fireballGold +=
                     1 +
-                    Math.floor(Math.random() * 2) +
+                    Math.floor(getRand() * 2) +
                     Math.floor(levelRef.current / 6);
                   killedPositions.push({ x: tx, y: ty });
                   newMonsters[mIdx] = {
@@ -3216,7 +3217,7 @@ function DownwardsNeon() {
                         spawnDeathEffect(ex, ey, newMonsters[cmIdx].color);
                         fireballGold +=
                           1 +
-                          Math.floor(Math.random() * 2) +
+                          Math.floor(getRand() * 2) +
                           Math.floor(levelRef.current / 6);
                         newMonsters[cmIdx] = {
                           ...newMonsters[cmIdx],
@@ -3375,7 +3376,7 @@ function DownwardsNeon() {
                 spawnDeathEffect(ex, ey, m.color);
                 novaGold +=
                   1 +
-                  Math.floor(Math.random() * 2) +
+                  Math.floor(getRand() * 2) +
                   Math.floor(levelRef.current / 6);
                 newMonsters[mIdx] = { ...m, currentHp: 0, x: -1, y: -1 };
               } else {
@@ -3890,7 +3891,7 @@ function DownwardsNeon() {
   const maybeSpawnSurfaceDefenseAccess = useCallback((lvl) => {
     if (lvl < 10) return false;
     if (floorsWithoutSurfaceDefenseRef.current >= 8) return true;
-    return Math.random() < 0.05;
+    return getRand() < 0.05;
   }, [floorsWithoutSurfaceDefenseRef]);
 
   const enterSurfaceDefense = useCallback(
@@ -3927,7 +3928,7 @@ function DownwardsNeon() {
       const waveCount = Math.min(12, 3 + Math.floor(sourceLevel / 4));
       const waveMonsters = [];
       for (let i = 0; i < waveCount && candidateTiles.length > 0; i++) {
-        const idx = Math.floor(Math.random() * candidateTiles.length);
+        const idx = Math.floor(getRand() * candidateTiles.length);
         const pos = candidateTiles.splice(idx, 1)[0];
         const monsterStats = getMonsterForLevel(sourceLevel);
         waveMonsters.push({
@@ -4057,7 +4058,7 @@ function DownwardsNeon() {
     const rewardWeapon = getWeaponForLevel(
       Math.max(1, surfaceDefenseSourceLevelRef.current || 1)
     );
-    const rewardPotion = POTIONS[Math.floor(Math.random() * POTIONS.length)];
+    const rewardPotion = POTIONS[Math.floor(getRand() * POTIONS.length)];
     applyPotionEffect(rewardPotion, null, null, "APARTMENT SECURED");
     setHasWeapon(true);
     setPendingWeapon(rewardWeapon);
@@ -4222,7 +4223,7 @@ function DownwardsNeon() {
           lastRevealedZone = zone;
         }
         if (tile === TILE.GOLD) {
-          const baseAmt = 1 + Math.floor(Math.random() * 6);
+          const baseAmt = 1 + Math.floor(getRand() * 6);
           const vaultMult = activeBiomeRef.current?.vaultGoldMultiplier || 1;
           goldTotal += baseAmt * vaultMult;
           newMap[y][x] = TILE.FLOOR;
@@ -4343,7 +4344,7 @@ function DownwardsNeon() {
             // Monstre tué par la charge
             const baseLoot = monster.isBoss
               ? 100
-              : 1 + Math.floor(Math.random() * 3);
+              : 1 + Math.floor(getRand() * 3);
             const loot = monster.isBoss
               ? baseLoot
               : baseLoot + Math.floor(levelRef.current / 5);
@@ -4392,7 +4393,7 @@ function DownwardsNeon() {
       }
       // === Phase 5 : Interaction tile d'arrivée ===
       if (stopTile === TILE.POTION) {
-        const p = POTIONS[Math.floor(Math.random() * POTIONS.length)];
+        const p = POTIONS[Math.floor(getRand() * POTIONS.length)];
         applyPotionEffect(p, finalPos.x, finalPos.y);
         newMap[finalPos.y][finalPos.x] = TILE.FLOOR;
       }

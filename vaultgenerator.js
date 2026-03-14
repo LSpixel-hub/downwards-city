@@ -3,6 +3,8 @@
 // Fichier autonome importé par le composant principal.
 // ============================================
 
+import { getRand } from "./prng";
+
 const GRID_WIDTH = 50;
 const GRID_HEIGHT = 21;
 const PERFECT_WEAPON_MULTIPLIER = 1.25;
@@ -185,7 +187,7 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
   // Probabilités : Golden Bank 15%, Armory 15%, Alchemist 14%, Crystal 14%,
   //                Sacrifice 14%, Echo Shrine 14%, Boss Arena 14%
   // Boss Arena requiert level >= 10, sinon fallback Echo Shrine
-  const themeRoll = Math.random();
+  const themeRoll = getRand();
 
   if (themeRoll < 0.15) {
     // ==========================================
@@ -209,7 +211,7 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
     for (let y = centerY - 2; y <= centerY + 2; y++) {
       for (let x = centerX - 3; x <= centerX + 3; x++) {
         if (y >= 1 && y <= GRID_HEIGHT && x >= 1 && x <= GRID_WIDTH) {
-          if (newMap[y][x] === TILE.FLOOR && Math.random() < 0.7) {
+          if (newMap[y][x] === TILE.FLOOR && getRand() < 0.7) {
             newMap[y][x] = TILE.GOLD;
           }
         }
@@ -236,9 +238,9 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
     const boostedLevel = Math.min(50, level + 15);
 
     // 30% chance : objet légendaire, 70% : surclassé parfait
-    if (Math.random() < 0.3) {
+    if (getRand() < 0.3) {
       // Légendaire nommé — arme
-      const leg = LEGENDARY_WEAPONS[Math.floor(Math.random() * LEGENDARY_WEAPONS.length)];
+      const leg = LEGENDARY_WEAPONS[Math.floor(getRand() * LEGENDARY_WEAPONS.length)];
       const baseWeapon = getWeaponForLevel(boostedLevel);
       const legendaryDmg = Math.round(baseWeapon.dmg * (1 + leg.bonusPct));
       weaponData = {
@@ -256,9 +258,9 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
       weaponData = forcePerfectWeapon(getWeaponForLevel(boostedLevel));
     }
 
-    if (Math.random() < 0.3) {
+    if (getRand() < 0.3) {
       // Légendaire nommé — armure
-      const leg = LEGENDARY_ARMORS[Math.floor(Math.random() * LEGENDARY_ARMORS.length)];
+      const leg = LEGENDARY_ARMORS[Math.floor(getRand() * LEGENDARY_ARMORS.length)];
       const baseArmor = getArmorForLevel(boostedLevel);
       if (baseArmor) {
         const legendaryAR = Math.round(baseArmor.ar * (1 + leg.bonusPct));
@@ -306,7 +308,7 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
     newMap[centerY][centerX + 2] = TILE.POTION;
     newMap[centerY - 2][centerX] = TILE.SCROLL;
 
-    const elixir = VAULT_ELIXIRS[Math.floor(Math.random() * VAULT_ELIXIRS.length)];
+    const elixir = VAULT_ELIXIRS[Math.floor(getRand() * VAULT_ELIXIRS.length)];
     vendorData = { ...elixir };
 
   } else if (themeRoll < 0.58) {
@@ -332,7 +334,7 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
       .filter((idx) => idx >= 0);
 
     if (availableGems.length > 0) {
-      const gemIdx = availableGems[Math.floor(Math.random() * availableGems.length)];
+      const gemIdx = availableGems[Math.floor(getRand() * availableGems.length)];
       gemData = { ...GEMS[gemIdx], idx: gemIdx };
       newMap[centerY][centerX] = TILE.GEM;
     } else {
@@ -371,7 +373,7 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
     newMap[centerY][centerX] = TILE.VENDOR;
 
     // Choisir un deal aléatoire
-    const deal = SACRIFICE_DEALS[Math.floor(Math.random() * SACRIFICE_DEALS.length)];
+    const deal = SACRIFICE_DEALS[Math.floor(getRand() * SACRIFICE_DEALS.length)];
     vendorData = {
       name: deal.name,
       effect: "sacrifice",
@@ -428,8 +430,8 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
     // Choisir un fragment de lore adapté au niveau
     const pool = LORE_FRAGMENTS.filter(f => level >= f.minLevel && level <= f.maxLevel);
     const fragment = pool.length > 0
-      ? pool[Math.floor(Math.random() * pool.length)]
-      : LORE_FRAGMENTS[Math.floor(Math.random() * LORE_FRAGMENTS.length)];
+      ? pool[Math.floor(getRand() * pool.length)]
+      : LORE_FRAGMENTS[Math.floor(getRand() * LORE_FRAGMENTS.length)];
 
     vendorData = {
       name: "ECHO SHRINE",
@@ -479,7 +481,7 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
     newMap[stairsPos.y][stairsPos.x] = TILE.STAIRS;
 
     // Choisir un boss
-    const boss = VAULT_BOSSES[Math.floor(Math.random() * VAULT_BOSSES.length)];
+    const boss = VAULT_BOSSES[Math.floor(getRand() * VAULT_BOSSES.length)];
 
     // Calculer les stats du boss basées sur le palier de monstres du niveau
     // On utilise des multiplicateurs sur les stats du Dragon (tier max)
@@ -505,7 +507,7 @@ export const generateThemedVault = (level, unlockedGems, getWeaponForLevel, getA
 
     // Ajouter les subroutines autour du boss
     const minionOffsets = [[-2, -1], [2, -1], [-2, 1], [2, 1], [0, -2], [0, 2]];
-    const shuffledOffsets = minionOffsets.sort(() => Math.random() - 0.5);
+    const shuffledOffsets = minionOffsets.sort(() => getRand() - 0.5);
     const minionHp = 15 + level * 1.5;
     const minionDmg = 5 + Math.floor(level * 0.5);
 

@@ -3,6 +3,8 @@
 // Challenge & Badge System
 // ============================================
 
+import { getRand } from "./prng";
+
 export const getDirectKills = (stats) =>
   Math.max(0, (stats.kills || 0) - (stats.terrainKills || 0));
 
@@ -15,7 +17,7 @@ export const makeFloorObjective = (
   if (isVaultFloor || level <= 1 || level >= 50) return null;
 
   // Challenges appear only on some floors.
-  if (Math.random() > 0.35) return null;
+  if (getRand() > 0.35) return null;
 
   const speedTarget =
     level <= 10 ? 20 : level <= 25 ? 17 : level <= 40 ? 15 : 13;
@@ -72,7 +74,7 @@ export const makeFloorObjective = (
     return true;
   });
 
-  return objectives[Math.floor(Math.random() * objectives.length)];
+  return objectives[Math.floor(getRand() * objectives.length)];
 };
 
 export const isObjectiveFailedNow = (objective, stats) => {
