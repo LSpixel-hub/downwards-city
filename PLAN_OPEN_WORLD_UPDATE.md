@@ -100,7 +100,7 @@ challenges.js          — Objectifs de floor
 - Quand le joueur atteint un bord de l'écran (x=0, x=49, y=0, y=20), vérifier si une sortie existe
 - Si oui : charger l'écran adjacent, placer le joueur du côté opposé
 - Transition visuelle : flash rapide ou fondu noir (0.15s max pour rester fluide)
-- **Pas de scroll continu** — fidèle au style TMNT NES
+- **Pas de scroll continu** — écran par écran
 
 **1.2 — Templates des 25 écrans**
 - Réutiliser le format `MAP_TEMPLATE` existant (50 chars × 21 lignes)
@@ -117,8 +117,7 @@ challenges.js          — Objectifs de floor
 
 **1.4 — Ennemis dans la ville**
 - Réutiliser le système de monstres existant avec des AI adaptées
-- Les monstres de la ville sont niveau 1-3, faibles mais présents
-- Quand un monstre est tué, il ne respawn pas dans la session (persistance écran)
+- Les monstres de la ville sont équivalents au niveau en cours du donjon.
 
 **Estimation** : C'est la phase la plus lourde. ~60% du travail total.
 
