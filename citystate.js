@@ -1,4 +1,4 @@
-import { getScreenId } from "./citygrid.js";
+import { getScreenId } from "./citygrid";
 
 export const initialCityState = {
   activeScreen: { x: 2, y: 0 },

@@ -73,8 +73,8 @@ import {
 } from "./down_over_helpers";
 import { getGameStyles } from "./down_over_styles";
 import { getRand } from "./prng";
-import { createCityGrid, getScreenId } from "./citygrid";
-import { applyScreenDelta, cityReducer, initialCityState } from "./citystate";
+import { createCityGrid } from "./citygrid";
+import { cityReducer, initialCityState } from "./citystate";
 import {
   GameOverScreen,
   VictoryScreen,
@@ -628,14 +628,15 @@ function DownwardsNeon() {
 
   const getInitialMapZoom = useCallback(() => 1, []);
 
-  const buildCityScreenData = useCallback(
-    (screen) => {
-      if (!screen) return null;
-
-      const screenId = getScreenId(screen.coords.x, screen.coords.y);
-      const cachedTemplate = cityState.screenStates[screenId]?.template;
-      if (cachedTemplate) {
-        return cachedTemplate;
+  const buildCityScreenData = useCallback((screen) => {
+    const ow = generateOverworld();
+    const shiftedRawMap = Array(GRID_HEIGHT + 1)
+      .fill(null)
+      .map(() => Array(GRID_WIDTH + 1).fill(OW_TILE.VOID));
+    for (let y = 0; y < ow.map.length; y++) {
+      const row = ow.map[y] || [];
+      for (let x = 0; x < row.length; x++) {
+        shiftedRawMap[y + 1][x + 1] = row[x];
       }
 
       const ow = generateOverworld();
@@ -649,47 +650,29 @@ function DownwardsNeon() {
         }
       }
 
-      const shiftedCoastLine = Array(GRID_WIDTH + 1).fill(GRID_HEIGHT);
-      for (let x = 0; x < ow.coastLine.length; x++) {
-        shiftedCoastLine[x + 1] = ow.coastLine[x] + 1;
-      }
+    const dungeonMap = shiftedRawMap.map((row) =>
+      row.map((t) => OW_TO_DUNGEON[t] ?? TILE.VOID)
+    );
 
-      const dungeonMap = shiftedRawMap.map((row) =>
-        row.map((t) => OW_TO_DUNGEON[t] ?? TILE.VOID)
-      );
-
-      // Keep stairs only in the central hub for now.
-      if (screen.coords.x !== 2 || screen.coords.y !== 2) {
-        for (let y = 1; y <= GRID_HEIGHT; y += 1) {
-          for (let x = 1; x <= GRID_WIDTH; x += 1) {
-            if (shiftedRawMap[y]?.[x] === OW_TILE.STAIRS) {
-              shiftedRawMap[y][x] = OW_TILE.STREET;
-              dungeonMap[y][x] = OW_TO_DUNGEON[OW_TILE.STREET];
-            }
+    // Keep stairs only in the central hub for now.
+    if (screen?.coords?.x !== 2 || screen?.coords?.y !== 2) {
+      for (let y = 1; y <= GRID_HEIGHT; y += 1) {
+        for (let x = 1; x <= GRID_WIDTH; x += 1) {
+          if (shiftedRawMap[y]?.[x] === OW_TILE.STAIRS) {
+            shiftedRawMap[y][x] = OW_TILE.STREET;
+            dungeonMap[y][x] = OW_TO_DUNGEON[OW_TILE.STREET];
           }
         }
       }
+    }
 
-      const template = {
-        ow,
-        shiftedRawMap,
-        shiftedCoastLine,
-        dungeonMap,
-      };
-
-      dispatchCity({
-        type: "CITY_UPDATE_SCREEN_STATE",
-        payload: {
-          x: screen.coords.x,
-          y: screen.coords.y,
-          patch: { template },
-        },
-      });
-
-      return template;
-    },
-    [cityState.screenStates]
-  );
+    return {
+      ow,
+      shiftedRawMap,
+      shiftedCoastLine,
+      dungeonMap,
+    };
+  }, []);
 
   // ======== OVERWORLD : Entrer dans la vue ville (level 0) ========
   const enterOverworld = useCallback(() => {
@@ -698,9 +681,8 @@ function DownwardsNeon() {
     const nextScreen = USE_CITY_GRID
       ? cityGrid.getScreen(initialCityState.activeScreen.x, initialCityState.activeScreen.y)
       : null;
-    const screenData = buildCityScreenData(nextScreen);
-    if (!screenData) return;
-    const { ow, shiftedRawMap, shiftedCoastLine, dungeonMap } = screenData;
+    const { ow, shiftedRawMap, shiftedCoastLine, dungeonMap } =
+      buildCityScreenData(nextScreen);
 
     // Garder la map brute pour le rendu overworld
     setOverworldRawMap(shiftedRawMap);
@@ -2043,17 +2025,33 @@ function DownwardsNeon() {
 
         if (!cityGrid.canExit(currentScreen.x, currentScreen.y, direction)) return;
 
-        const nextScreenCoords = applyScreenDelta(currentScreen, direction);
+        const deltaByDir = {
+          north: { x: 0, y: -1 },
+          south: { x: 0, y: 1 },
+          west: { x: -1, y: 0 },
+          east: { x: 1, y: 0 },
+        };
+        const delta = deltaByDir[direction];
+        const nextScreenCoords = {
+          x: currentScreen.x + delta.x,
+          y: currentScreen.y + delta.y,
+        };
         const nextScreen = cityGrid.getScreen(nextScreenCoords.x, nextScreenCoords.y);
         if (!nextScreen) return;
 
-        const screenData = buildCityScreenData(nextScreen);
-        if (!screenData) return;
-        const { shiftedRawMap, shiftedCoastLine, dungeonMap } = screenData;
+        const { shiftedRawMap, shiftedCoastLine, dungeonMap } =
+          buildCityScreenData(nextScreen);
 
         dispatchCity({
           type: "CITY_MOVE_REQUEST",
           payload: { direction },
+        });
+        setMap(dungeonMap);
+        setOverworldRawMap(shiftedRawMap);
+        setOverworldCoastLine(shiftedCoastLine);
+        dispatchCity({
+          type: "CITY_SCREEN_CHANGED",
+          payload: { screen: nextScreenCoords },
         });
 
         const edgePadding = 2;
@@ -2066,25 +2064,12 @@ function DownwardsNeon() {
             ? { x: _player.x, y: GRID_HEIGHT - edgePadding }
             : { x: _player.x, y: 1 + edgePadding };
 
-        if (cityTransitionTimerRef.current) {
-          clearTimeout(cityTransitionTimerRef.current);
-        }
-        cityTransitionTimerRef.current = setTimeout(() => {
-          setMap(dungeonMap);
-          setOverworldRawMap(shiftedRawMap);
-          setOverworldCoastLine(shiftedCoastLine);
-          dispatchCity({
-            type: "CITY_SCREEN_CHANGED",
-            payload: { screen: nextScreenCoords },
-          });
-          setPlayer(wrappedPos);
-          dispatchCity({
-            type: "CITY_SET_TRANSITION",
-            payload: { active: false, direction: null },
-          });
-          setPendingScroll(true);
-          cityTransitionTimerRef.current = null;
-        }, 120);
+        setPlayer(wrappedPos);
+        dispatchCity({
+          type: "CITY_SET_TRANSITION",
+          payload: { active: false, direction: null },
+        });
+        setPendingScroll(true);
         return;
       }
 
