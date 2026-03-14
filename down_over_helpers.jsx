@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import { NEON, BIOMES } from "./data";
+import { getRand } from "./prng";
 import { PALETTE as OW_PALETTE } from "./overworldgenerator";
 
 // ============================================
@@ -93,7 +94,7 @@ export const getTerrainDamage = (tile) => {
 };
 
 export const getRandomTerrainTile = (level) => {
-  const roll = Math.random();
+  const roll = getRand();
   if (level >= 30) {
     if (roll < 0.3) return TILE.FIRE;
     if (roll < 0.55) return TILE.POISON;

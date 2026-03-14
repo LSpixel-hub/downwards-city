@@ -4,6 +4,8 @@
 // Pour Downwards Overdrive Rogue
 // ============================================
 
+import { getRand } from "./prng";
+
 // ============================================
 // CONSTANTES DE GRILLE (STRICT 50x21)
 // ============================================
@@ -253,7 +255,7 @@ export const generateOverworld = (options = {}) => {
       map[y][x] = CHAR_TO_TILE[ch] ?? TILE.SKY;
 
       if (map[y][x] === TILE.STAR) {
-        starMap.push({ x, y, phase: Math.random() * Math.PI * 2 });
+        starMap.push({ x, y, phase: getRand() * Math.PI * 2 });
       }
     }
   }

@@ -4,6 +4,7 @@
 // ============================================
 
 import { NEON, BOWS, ARMORS, WEAPONS, MONSTERS } from "./data";
+import { getRand } from "./prng";
 
 // ── Weapon / Armor / Bow color helpers ──────────────────────────
 
@@ -43,9 +44,9 @@ const ARMOR_VALUE_MULTIPLIER = 0.72;
 export const getBowForLevel = (level) => {
   const pool = BOWS.filter((b) => level >= b.minLevel && level <= b.maxLevel);
   if (pool.length === 0) return null;
-  const tier = pool[Math.floor(Math.random() * pool.length)];
-  const name = tier.names[Math.floor(Math.random() * tier.names.length)];
-  const bonus = tier.minBonus + Math.floor(Math.random() * (tier.maxBonus - tier.minBonus + 1));
+  const tier = pool[Math.floor(getRand() * pool.length)];
+  const name = tier.names[Math.floor(getRand() * tier.names.length)];
+  const bonus = tier.minBonus + Math.floor(getRand() * (tier.maxBonus - tier.minBonus + 1));
   return { name, bonus };
 };
 
@@ -57,21 +58,21 @@ export const getArmorForLevel = (level) => {
   if (pool.length === 0) return null;
 
   // Pick a random archetype from the pool
-  const archetype = pool[Math.floor(Math.random() * pool.length)];
+  const archetype = pool[Math.floor(getRand() * pool.length)];
 
   // Pick a random name from the 3 variants
   const baseName =
-    archetype.names[Math.floor(Math.random() * archetype.names.length)];
+    archetype.names[Math.floor(getRand() * archetype.names.length)];
 
   // Apply +/- 20% variance to baseAR
-  const variance = 0.8 + Math.random() * 0.4; // 0.8 to 1.2
+  const variance = 0.8 + getRand() * 0.4; // 0.8 to 1.2
   let finalAR = Math.max(
     1,
     Math.round(archetype.baseAR * variance * ARMOR_VALUE_MULTIPLIER)
   );
 
   // 10% chance of Perfect
-  const isPerfect = Math.random() < PERFECT_ARMOR_CHANCE;
+  const isPerfect = getRand() < PERFECT_ARMOR_CHANCE;
   if (isPerfect) {
     finalAR += PERFECT_ARMOR_BONUS;
   }
@@ -119,18 +120,18 @@ export const getMonsterForLevel = (level) => {
   const remainingInTier = MONSTERS.length - tierStart;
   const poolSize = tierStart >= MONSTERS.length - 4 ? remainingInTier : 3;
   const idx =
-    tierStart + Math.floor(Math.random() * Math.max(1, poolSize));
+    tierStart + Math.floor(getRand() * Math.max(1, poolSize));
   const m = MONSTERS[idx];
-  const name = m.names[Math.floor(Math.random() * m.names.length)];
-  const finalHp = Math.max(1, Math.round(m.hp * (0.8 + Math.random() * 0.4)));
-  const finalDmg = Math.max(1, Math.round(m.dmg * (0.9 + Math.random() * 0.2)));
+  const name = m.names[Math.floor(getRand() * m.names.length)];
+  const finalHp = Math.max(1, Math.round(m.hp * (0.8 + getRand() * 0.4)));
+  const finalDmg = Math.max(1, Math.round(m.dmg * (0.9 + getRand() * 0.2)));
 
   return {
     char: m.char,
     name,
     hp: finalHp,
     dmg: finalDmg,
-    color: m.colors[Math.floor(Math.random() * m.colors.length)],
+    color: m.colors[Math.floor(getRand() * m.colors.length)],
     effect: m.effect || null,
   };
 };
@@ -150,7 +151,7 @@ export const getWeaponForLevel = (level) => {
 
   const pool = WEAPONS[tier];
 
-  const roll = Math.random() * 100;
+  const roll = getRand() * 100;
   let cumulativeChance = 0;
   let selectedWeaponType = pool[0];
 
@@ -163,14 +164,14 @@ export const getWeaponForLevel = (level) => {
   }
 
   // --- NOUVELLE LOGIQUE ICI ---
-  const nameIndex = Math.floor(Math.random() * selectedWeaponType.names.length);
+  const nameIndex = Math.floor(getRand() * selectedWeaponType.names.length);
   const finalName = selectedWeaponType.names[nameIndex];
   
   const minDmg = selectedWeaponType.dmg[0];
   const maxDmg = selectedWeaponType.dmg[1];
-  const baseDmg = minDmg + Math.floor(Math.random() * (maxDmg - minDmg + 1));
+  const baseDmg = minDmg + Math.floor(getRand() * (maxDmg - minDmg + 1));
 
-  const isPerfect = Math.random() < PERFECT_WEAPON_CHANCE;
+  const isPerfect = getRand() < PERFECT_WEAPON_CHANCE;
   const perfectBonus = isPerfect
     ? Math.max(1, Math.round(baseDmg * (PERFECT_WEAPON_MULTIPLIER - 1)))
     : 0;
