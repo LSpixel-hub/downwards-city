@@ -238,6 +238,19 @@ export function getGameStyles(windowBorderColor, NEON) {
             height: calc(100dvh - 20px);
           }
 
+
+          .city-transition-enter {
+            opacity: 1;
+            filter: brightness(1);
+            transition: opacity 120ms linear, filter 120ms linear;
+          }
+
+          .city-transition-exit {
+            opacity: 0.7;
+            filter: brightness(1.35);
+            transition: opacity 120ms linear, filter 120ms linear;
+          }
+
           .map-area {
             position: relative;
             flex: 1;

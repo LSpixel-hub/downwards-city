@@ -259,6 +259,7 @@ function DownwardsNeon() {
   const screenShakeTimerRef = useRef(null);
   const levelTransitionTimerRef = useRef(null);
   const titleLoreTimerRef = useRef(null);
+  const cityTransitionTimerRef = useRef(null);
 
   // ======== A1 : Toutes les refs useLatest pour lecture dans les callbacks ========
   const playerRef = useLatest(player);
@@ -439,6 +440,8 @@ function DownwardsNeon() {
         clearTimeout(screenShakeTimerRef.current);
       if (levelTransitionTimerRef.current)
         clearTimeout(levelTransitionTimerRef.current);
+      if (cityTransitionTimerRef.current)
+        clearTimeout(cityTransitionTimerRef.current);
       if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
       effectTimersRef.current.forEach((t) => clearTimeout(t));
       effectTimersRef.current.clear();
@@ -635,12 +638,17 @@ function DownwardsNeon() {
       for (let x = 0; x < row.length; x++) {
         shiftedRawMap[y + 1][x + 1] = row[x];
       }
-    }
 
-    const shiftedCoastLine = Array(GRID_WIDTH + 1).fill(GRID_HEIGHT);
-    for (let x = 0; x < ow.coastLine.length; x++) {
-      shiftedCoastLine[x + 1] = ow.coastLine[x] + 1;
-    }
+      const ow = generateOverworld();
+      const shiftedRawMap = Array(GRID_HEIGHT + 1)
+        .fill(null)
+        .map(() => Array(GRID_WIDTH + 1).fill(OW_TILE.VOID));
+      for (let y = 0; y < ow.map.length; y++) {
+        const row = ow.map[y] || [];
+        for (let x = 0; x < row.length; x++) {
+          shiftedRawMap[y + 1][x + 1] = row[x];
+        }
+      }
 
     const dungeonMap = shiftedRawMap.map((row) =>
       row.map((t) => OW_TO_DUNGEON[t] ?? TILE.VOID)
@@ -5159,7 +5167,13 @@ function DownwardsNeon() {
             flexDirection: "column",
             minHeight: 0,
           }}
-          className="game-screen"
+          className={`game-screen ${
+            isInCityGrid
+              ? cityState.transition.active
+                ? "city-transition-exit"
+                : "city-transition-enter"
+              : ""
+          }`}
         >
           {/* HUD */}
           <div className="hud-grid">
