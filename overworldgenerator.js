@@ -318,6 +318,73 @@ export const generateOverworld = (options = {}) => {
   };
 };
 
+function hashSeedLike(seedLike) {
+  const text = String(seedLike ?? "seed");
+  let hash = 0;
+  for (let i = 0; i < text.length; i += 1) {
+    hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
+  }
+  return hash;
+}
+
+function makeSeededRandom(seedLike) {
+  let state = hashSeedLike(seedLike) || 0x12345678;
+  return () => {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    return state / 0x100000000;
+  };
+}
+
+export function generateHubTemplate(screenMeta) {
+  const ow = generateOverworld();
+  const isCentralHub = screenMeta?.coords?.x === 2 && screenMeta?.coords?.y === 2;
+
+  if (!isCentralHub) {
+    for (let y = 0; y <= GRID_HEIGHT; y += 1) {
+      for (let x = 0; x <= GRID_WIDTH; x += 1) {
+        if (ow.map[y]?.[x] === TILE.STAIRS) {
+          ow.map[y][x] = TILE.STREET;
+        }
+      }
+    }
+  }
+
+  return ow;
+}
+
+export function generateStreetTemplate(screenMeta, seedLike) {
+  const ow = generateOverworld();
+  const rand = makeSeededRandom(
+    seedLike ?? `${screenMeta?.coords?.x ?? 0},${screenMeta?.coords?.y ?? 0}`
+  );
+
+  for (let y = 0; y <= GRID_HEIGHT; y += 1) {
+    for (let x = 0; x <= GRID_WIDTH; x += 1) {
+      if (ow.map[y]?.[x] === TILE.STAIRS) {
+        ow.map[y][x] = TILE.STREET;
+      }
+
+      if (ow.map[y]?.[x] === TILE.STREET && y >= 11 && y <= 15) {
+        const roll = rand();
+        if (roll < 0.015) {
+          ow.map[y][x] = TILE.PUDDLE;
+        } else if (roll > 0.985) {
+          ow.map[y][x] = TILE.STREETLIGHT;
+        }
+      }
+    }
+  }
+
+  return ow;
+}
+
+export function generateCityScreenTemplate(screenMeta, seedLike) {
+  if (screenMeta?.templateType === "hub") {
+    return generateHubTemplate(screenMeta);
+  }
+  return generateStreetTemplate(screenMeta, seedLike);
+}
+
 // ============================================
 // UTILITAIRES
 // ============================================
