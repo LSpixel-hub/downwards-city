@@ -277,3 +277,23 @@ Ce document transforme la **Phase 1** de `PLAN_OPEN_WORLD_UPDATE.md` en plan d'e
 5. Retour au premier écran et vérification que l'ennemi vaincu reste absent.
 
 Si ce parcours passe sans erreur, la Phase 1 est considérée **fonctionnelle**.
+
+
+---
+
+## 3) État d’avancement constaté (audit rapide)
+
+Statut estimé dans le code actuel:
+
+- ✅ `P1-001` Créer `citygrid.js` + API de base.
+- ✅ `P1-002` Créer `citystate.js` + reducer + actions.
+- ✅ `P1-003` Intégrer reducer overworld dans `down_over.jsx` (flag + `isInCityGrid`).
+- ✅ `P1-004` Implémenter franchissement bord + repositionnement écran voisin.
+- ✅ `P1-005` Ajouter classes CSS transition et orchestration state.
+- ✅ `P1-006` Ajouter générateur `hub/street` format 50x21.
+- ✅ `P1-007` Mettre en cache templates au niveau `screenStates`.
+- ⏳ `P1-008` Ajouter registre POI (>=5) + détection contact. *(reste à faire)*
+
+### Prochaine étape recommandée
+
+Prioriser `P1-008` (POI interactifs) pour finaliser le cœur fonctionnel de la phase 1 avant l’ajout/raffinement IA ennemis.

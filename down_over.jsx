@@ -11,6 +11,7 @@ import { flushSync } from "react-dom";
 import { generateThemedVault } from "./vaultgenerator";
 import {
   generateOverworld,
+  generateCityScreenTemplate,
   TILE as OW_TILE,
   OW_TO_DUNGEON,
   PALETTE as OW_PALETTE,
@@ -629,42 +630,53 @@ function DownwardsNeon() {
   const getInitialMapZoom = useCallback(() => 1, []);
 
   const buildCityScreenData = useCallback((screen) => {
-    const ow = generateOverworld();
+    const safeScreen =
+      screen || cityGrid.getScreen(cityState.activeScreen.x, cityState.activeScreen.y);
+    const screenCoords = safeScreen?.coords || cityState.activeScreen;
+    const screenId = `${screenCoords.x},${screenCoords.y}`;
+    const cachedTemplate = cityState.screenStates[screenId]?.template;
+
+    const ow =
+      cachedTemplate ||
+      generateCityScreenTemplate(safeScreen, `${screenCoords.x}-${screenCoords.y}`);
+
+    if (!cachedTemplate) {
+      dispatchCity({
+        type: "CITY_UPDATE_SCREEN_STATE",
+        payload: {
+          x: screenCoords.x,
+          y: screenCoords.y,
+          patch: { template: ow },
+        },
+      });
+    }
+
     const shiftedRawMap = Array(GRID_HEIGHT + 1)
       .fill(null)
       .map(() => Array(GRID_WIDTH + 1).fill(OW_TILE.VOID));
-    for (let y = 0; y < ow.map.length; y++) {
+
+    for (let y = 0; y < ow.map.length; y += 1) {
       const row = ow.map[y] || [];
-      for (let x = 0; x < row.length; x++) {
+      for (let x = 0; x < row.length; x += 1) {
         shiftedRawMap[y + 1][x + 1] = row[x];
       }
+    }
 
-      const ow = generateOverworld();
-      const shiftedRawMap = Array(GRID_HEIGHT + 1)
-        .fill(null)
-        .map(() => Array(GRID_WIDTH + 1).fill(OW_TILE.VOID));
-      for (let y = 0; y < ow.map.length; y++) {
-        const row = ow.map[y] || [];
-        for (let x = 0; x < row.length; x++) {
-          shiftedRawMap[y + 1][x + 1] = row[x];
+    const shiftedCoastLine = [];
+    for (let x = 1; x <= GRID_WIDTH; x += 1) {
+      let shoreY = GRID_HEIGHT;
+      for (let y = 1; y <= GRID_HEIGHT; y += 1) {
+        if (shiftedRawMap[y]?.[x] === OW_TILE.WATER) {
+          shoreY = y;
+          break;
         }
       }
+      shiftedCoastLine[x] = shoreY;
+    }
 
     const dungeonMap = shiftedRawMap.map((row) =>
       row.map((t) => OW_TO_DUNGEON[t] ?? TILE.VOID)
     );
-
-    // Keep stairs only in the central hub for now.
-    if (screen?.coords?.x !== 2 || screen?.coords?.y !== 2) {
-      for (let y = 1; y <= GRID_HEIGHT; y += 1) {
-        for (let x = 1; x <= GRID_WIDTH; x += 1) {
-          if (shiftedRawMap[y]?.[x] === OW_TILE.STAIRS) {
-            shiftedRawMap[y][x] = OW_TILE.STREET;
-            dungeonMap[y][x] = OW_TO_DUNGEON[OW_TILE.STREET];
-          }
-        }
-      }
-    }
 
     return {
       ow,
@@ -672,7 +684,7 @@ function DownwardsNeon() {
       shiftedCoastLine,
       dungeonMap,
     };
-  }, []);
+  }, [cityGrid, cityState.activeScreen, cityState.screenStates]);
 
   // ======== OVERWORLD : Entrer dans la vue ville (level 0) ========
   const enterOverworld = useCallback(() => {
